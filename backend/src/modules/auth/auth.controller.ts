@@ -24,4 +24,14 @@ export class AuthController{
             });
         }
     }
+    async forgotPassword( req: Request, res: Response) {
+        try {
+            const result = await this.authService.forgotPassword( req.body );
+            return res.status(200).json(result);
+        } catch (error) {
+            return res.status(400).json({
+            message: error instanceof Error ? error.message: 'Erro ao gerar token.',
+            });
+        }
+    }
 }

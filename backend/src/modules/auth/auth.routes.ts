@@ -14,4 +14,11 @@ authRoutes.post(
   authController.login.bind(authController)
 );
 
+authRoutes.post(
+  '/forgot-password',
+  authController.forgotPassword.bind(
+    authController
+  )
+);
+
 export { authRoutes };

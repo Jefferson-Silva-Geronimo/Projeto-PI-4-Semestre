@@ -3,6 +3,8 @@ import { RegisterDTO } from './auth.types';
 import {prisma} from '../../database/prisma';
 import jwt from 'jsonwebtoken';
 import { LoginDTO } from './auth.types';
+import crypto from 'crypto';
+import { ForgotPasswordDTO, ResetPasswordDTO } from './auth.types';
 
 export class AuthService {
     async register(data: RegisterDTO) {
@@ -72,6 +74,39 @@ export class AuthService {
             email: user.email,
             role: user.role,
             },
+        };
+    }
+
+    async forgotPassword(data: ForgotPasswordDTO) {
+        const email = data.email.trim().toLowerCase();
+
+        const user = await prisma.user.findUnique({
+            where: {
+            email
+            }
+        });
+
+        if (!user) {
+            throw new Error('Usuário não encontrado.');
+        }
+
+        const token = crypto.randomUUID();
+
+        const expiresAt = new Date(
+            Date.now() + 1000 * 60 * 30
+        );
+
+        await prisma.passwordResetToken.create({
+            data: {
+            token,
+            userId: user.id,
+            expiresAt
+            }
+        });
+
+        return {
+            message: 'Token gerado com sucesso.',
+            token
         };
     }
 }
