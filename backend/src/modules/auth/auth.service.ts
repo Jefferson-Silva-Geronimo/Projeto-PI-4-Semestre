@@ -1,6 +1,8 @@
 import bcrypt from 'bcrypt';
 import { RegisterDTO } from './auth.types';
 import {prisma} from '../../database/prisma';
+import jwt from 'jsonwebtoken';
+import { LoginDTO } from './auth.types';
 
 export class AuthService {
     async register(data: RegisterDTO) {
@@ -29,6 +31,47 @@ export class AuthService {
             email: user.email,
             role: user.role,
             createdAt: user.createdAt,
+        };
+    }
+
+    async login(data: LoginDTO) {
+        const email = data.email.trim().toLowerCase();
+        const user = await prisma.user.findUnique({
+            where: {
+            email,
+            },
+        });
+        if (!user) {
+            throw new Error('E-mail ou senha inválidos.');
+        }
+        const passwordIsValid = await bcrypt.compare(
+            data.password,
+            user.passwordHash
+        );
+
+        if (!passwordIsValid) {
+            throw new Error('E-mail ou senha inválidos.');
+        }
+
+        const token = jwt.sign(
+            {
+                userId: user.id,
+                role: user.role,
+            },
+            process.env.JWT_SECRET as string,
+            {
+                expiresIn: '7d',
+            }
+        );
+
+        return {
+            token,
+            user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            },
         };
     }
 }
