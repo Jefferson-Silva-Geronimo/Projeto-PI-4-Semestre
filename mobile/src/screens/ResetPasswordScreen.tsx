@@ -8,92 +8,71 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import { useRegister } from '../hooks/useRegister';
+import { useResetPassword } from '../hooks/useResetPassword';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
 
 type Props = NativeStackScreenProps<
   AuthStackParamList,
-  'Register'
+  'ResetPassword'
 >;
 
-export default function RegisterScreen({
+export default function ResetPasswordScreen({
   navigation,
+  route,
 }: Props) {
+  const { token } = route.params;
+
   const {
-    name,
-    email,
     password,
     passwordConfirmation,
     loading,
     errorMessage,
     successMessage,
-    setName,
-    setEmail,
     setPassword,
     setPasswordConfirmation,
-    handleRegister,
-  } = useRegister();
+    handleResetPassword,
+  } = useResetPassword({
+    token,
+  });
 
-  async function onRegisterPress() {
-    const registered = await handleRegister();
+  async function onResetPasswordPress() {
+    const passwordWasReset =
+      await handleResetPassword();
 
-    if (!registered) {
+    if (!passwordWasReset) {
       return;
     }
 
-    navigation.replace('Login');
+    navigation.popToTop();
   }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.logo}>PETSHOP</Text>
+        <Text style={styles.logo}>
+          PETSHOP
+        </Text>
 
-        <Text style={styles.title}>Criar conta</Text>
+        <Text style={styles.title}>
+          Criar nova senha
+        </Text>
 
         <Text style={styles.subtitle}>
-          Preencha os dados para continuar.
+          Escolha uma nova senha para acessar
+          sua conta.
         </Text>
 
         <View style={styles.form}>
           <TextInput
             style={[
               styles.input,
-              errorMessage && styles.inputError,
+              errorMessage
+                ? styles.inputError
+                : undefined,
             ]}
-            placeholder="Nome completo"
-            value={name}
-            onChangeText={setName}
-            autoCapitalize="words"
-            autoCorrect={false}
-            autoComplete="name"
-            editable={!loading}
-            returnKeyType="next"
-          />
-
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Digite seu e-mail"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="email"
-            editable={!loading}
-            returnKeyType="next"
-          />
-
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Digite sua senha"
+            placeholder="Digite a nova senha"
+            placeholderTextColor="#64748B"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -106,9 +85,12 @@ export default function RegisterScreen({
           <TextInput
             style={[
               styles.input,
-              errorMessage && styles.inputError,
+              errorMessage
+                ? styles.inputError
+                : undefined,
             ]}
-            placeholder="Confirme sua senha"
+            placeholder="Confirme a nova senha"
+            placeholderTextColor="#64748B"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
             secureTextEntry
@@ -116,8 +98,15 @@ export default function RegisterScreen({
             autoCorrect={false}
             editable={!loading}
             returnKeyType="done"
-            onSubmitEditing={onRegisterPress}
+            onSubmitEditing={
+              onResetPasswordPress
+            }
           />
+
+          <Text style={styles.helperText}>
+            A senha deve possuir pelo menos 8
+            caracteres.
+          </Text>
 
           {errorMessage ? (
             <Text style={styles.errorText}>
@@ -134,24 +123,30 @@ export default function RegisterScreen({
           <TouchableOpacity
             style={[
               styles.button,
-              loading && styles.buttonDisabled,
+              loading
+                ? styles.buttonDisabled
+                : undefined,
             ]}
             activeOpacity={0.8}
-            onPress={onRegisterPress}
+            onPress={onResetPasswordPress}
             disabled={loading}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Cadastrando...' : 'Cadastrar'}
+              {loading
+                ? 'Alterando...'
+                : 'Alterar senha'}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.7}
             disabled={loading}
-            onPress={() => navigation.goBack()}
+            onPress={() =>
+              navigation.navigate('Login')
+            }
           >
             <Text style={styles.link}>
-              Já possui uma conta? Entrar
+              Voltar para o login
             </Text>
           </TouchableOpacity>
         </View>
