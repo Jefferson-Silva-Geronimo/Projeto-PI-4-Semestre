@@ -109,4 +109,63 @@ export class AuthService {
             token
         };
     }
+    async resetPassword(data: ResetPasswordDTO) {
+        const resetToken = await prisma.passwordResetToken.findUnique({
+            where: {
+                token: data.token,
+            },
+
+            include: {
+                user: true,
+            },
+            });
+
+        if (!resetToken) {
+            throw new Error(
+            'Token de recuperação inválido.'
+            );
+        }
+
+        if (resetToken.expiresAt < new Date()) {
+            throw new Error('Token expirado.');
+        }
+        const passwordHash = await bcrypt.hash( data.password, 10);
+        await prisma.user.update({
+            where: {
+                id: resetToken.user.id,
+            },
+            data: {
+                passwordHash,
+            },
+        });
+
+        await prisma.passwordResetToken.delete({
+            where: {
+                id: resetToken.id,
+            },
+        });
+
+        return {
+            message: 'Senha alterada com sucesso.',
+        };
+    }
+    async me(userId: string) {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            throw new Error('Usuário não encontrado.');
+        }
+
+        return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            createdAt: user.createdAt,
+        };
+    }
 }

@@ -34,4 +34,27 @@ export class AuthController{
             });
         }
     }
+    async resetPassword(req: Request, res: Response) {
+        try {
+            const result =
+            await this.authService.resetPassword(req.body);
+            return res.status(200).json(
+                result
+            );
+        } catch (error) {
+            return res.status(400).json({
+                message: error instanceof Error ? error.message : 'Erro ao redefinir senha.',
+            });
+        }
+    }
+    async me(req: Request, res: Response) {
+        try {
+            const user = await this.authService.me((req as any).user.userId);
+            return res.status(200).json(user);
+        } catch (error) {
+            return res.status(404).json({
+                message: error instanceof Error ? error.message : 'Usuário não encontrado.',
+            });
+        }
+    }
 }
