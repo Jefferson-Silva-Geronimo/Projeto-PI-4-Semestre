@@ -14,4 +14,6 @@ export type ClientStackParamList = {
 
 export type AdminStackParamList = {
   AdminHome: undefined;
+  AdminProducts: undefined;
+  CreateProduct: undefined;
 };

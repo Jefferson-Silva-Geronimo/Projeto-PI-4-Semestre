@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { authRoutes } from './modules/auth/auth.routes';
+import { productRoutes } from './modules/products/product.routes';
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,7 @@ app.get('/', (_, res) => {
 });
 
 app.use('/auth', authRoutes);
+app.use('/products', productRoutes);
 
 const PORT = 3000;
 

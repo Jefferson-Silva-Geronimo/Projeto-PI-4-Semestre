@@ -8,29 +8,28 @@ import {
   View,
 } from 'react-native';
 
-import { useAuth } from '../hooks/useAuth';
-import { useClientProducts } from '../hooks/useClientProducts';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useAdminProducts } from '../hooks/useAdminProducts';
 import { authStyles as styles } from '../theme/authStyles';
 
+import type { AdminStackParamList } from '../types/navigation';
 import type { Product } from '../types/product';
 
-export default function ClientHomeScreen() {
-  const {
-    user,
-    signOut,
-  } = useAuth();
+type Props = NativeStackScreenProps<
+  AdminStackParamList,
+  'AdminProducts'
+>;
 
+export default function AdminProductsScreen({
+  navigation,
+}: Props) {
   const {
     products,
     loading,
     errorMessage,
     loadProducts,
-  } = useClientProducts();
-
-  async function handleLogout() {
-    await signOut();
-  }
+  } = useAdminProducts();
 
   function formatPrice(priceInCents: number) {
     return (priceInCents / 100).toLocaleString(
@@ -47,55 +46,43 @@ export default function ClientHomeScreen() {
   }: {
     item: Product;
   }) {
-    const isUnavailable = item.stock === 0;
-
     return (
-      <View style={styles.clientProductCard}>
+      <View style={styles.productCard}>
         <Image
           source={{
             uri: item.imageUrl,
           }}
-          style={styles.clientProductImage}
+          style={styles.productImage}
           resizeMode="cover"
           accessibilityLabel={`Imagem do produto ${item.name}`}
         />
 
-        <View
-          style={styles.clientProductInformation}
-        >
+        <View style={styles.productInformation}>
           <Text
-            style={styles.clientProductName}
+            style={styles.productName}
             numberOfLines={2}
           >
             {item.name}
           </Text>
 
-          <Text
-            style={styles.clientProductDescription}
-            numberOfLines={2}
-          >
-            {item.description}
-          </Text>
-
-          <Text style={styles.clientProductPrice}>
+          <Text style={styles.productPrice}>
             {formatPrice(item.priceInCents)}
           </Text>
 
-          {isUnavailable ? (
-            <Text
-              style={
-                styles.clientProductUnavailable
-              }
-            >
-              Indisponível
-            </Text>
-          ) : (
-            <Text
-              style={styles.clientProductAvailable}
-            >
-              Disponível
-            </Text>
-          )}
+          <Text style={styles.productStock}>
+            Estoque: {item.stock}
+          </Text>
+
+          <Text
+            style={[
+              styles.productStatus,
+              item.active
+                ? styles.activeStatus
+                : styles.inactiveStatus,
+            ]}
+          >
+            {item.active ? 'Ativo' : 'Inativo'}
+          </Text>
         </View>
       </View>
     );
@@ -147,12 +134,12 @@ export default function ClientHomeScreen() {
 
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={handleLogout}
+            onPress={() => navigation.goBack()}
             accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
+            accessibilityLabel="Voltar para a página anterior"
           >
             <Text style={styles.link}>
-              Sair da conta
+              Voltar
             </Text>
           </TouchableOpacity>
         </View>
@@ -162,31 +149,41 @@ export default function ClientHomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.clientProductsHeader}>
-        <View style={styles.clientProductsWelcome}>
-          <Text style={styles.clientProductsLogo}>
-            PETSHOP
+      <View style={styles.productsHeader}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.goBack()}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para a área administrativa"
+        >
+          <Text style={styles.productsBackText}>
+            ‹ Voltar
+          </Text>
+        </TouchableOpacity>
+
+        <View style={styles.productsHeaderText}>
+          <Text style={styles.productsTitle}>
+            Produtos
           </Text>
 
-          <Text style={styles.clientProductsTitle}>
-            Olá, {user?.name}
-          </Text>
-
-          <Text
-            style={styles.clientProductsSubtitle}
-          >
-            Confira os produtos disponíveis.
+          <Text style={styles.productsSubtitle}>
+            Gerencie o catálogo do pet shop.
           </Text>
         </View>
 
         <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={handleLogout}
+          style={styles.createProductButton}
+          activeOpacity={0.8}
+          onPress={() =>
+            navigation.navigate('CreateProduct')
+          }
           accessibilityRole="button"
-          accessibilityLabel="Sair da conta"
+          accessibilityLabel="Cadastrar novo produto"
         >
-          <Text style={styles.clientLogoutText}>
-            Sair
+          <Text
+            style={styles.createProductButtonText}
+          >
+            Novo produto
           </Text>
         </TouchableOpacity>
       </View>
@@ -196,7 +193,7 @@ export default function ClientHomeScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderProduct}
         contentContainerStyle={[
-          styles.clientProductsListContent,
+          styles.productsListContent,
           products.length === 0
             ? styles.productsEmptyListContent
             : undefined,
@@ -212,14 +209,14 @@ export default function ClientHomeScreen() {
             <Text
               style={styles.productsEmptyTitle}
             >
-              Nenhum produto disponível
+              Nenhum produto cadastrado
             </Text>
 
             <Text
               style={styles.productsEmptyText}
             >
-              O catálogo ainda não possui produtos
-              disponíveis.
+              Cadastre o primeiro produto para
+              iniciar o catálogo.
             </Text>
           </View>
         }

@@ -5,10 +5,21 @@ import {
   View,
 } from 'react-native';
 
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
 import { useAuth } from '../hooks/useAuth';
 import { authStyles as styles } from '../theme/authStyles';
 
-export default function AdminHomeScreen() {
+import type { AdminStackParamList } from '../types/navigation';
+
+type Props = NativeStackScreenProps<
+  AdminStackParamList,
+  'AdminHome'
+>;
+
+export default function AdminHomeScreen({
+  navigation,
+}: Props) {
   const {
     user,
     signOut,
@@ -16,6 +27,10 @@ export default function AdminHomeScreen() {
 
   async function handleLogout() {
     await signOut();
+  }
+
+  function handleOpenProducts() {
+    navigation.navigate('AdminProducts');
   }
 
   return (
@@ -41,12 +56,23 @@ export default function AdminHomeScreen() {
           <TouchableOpacity
             style={styles.button}
             activeOpacity={0.8}
+            onPress={handleOpenProducts}
+            accessibilityRole="button"
+            accessibilityLabel="Acessar o gerenciamento de produtos"
+          >
+            <Text style={styles.buttonText}>
+              Gerenciar produtos
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.7}
             onPress={handleLogout}
             accessibilityRole="button"
             accessibilityLabel="Sair da conta"
           >
-            <Text style={styles.buttonText}>
-              Sair
+            <Text style={styles.link}>
+              Sair da conta
             </Text>
           </TouchableOpacity>
         </View>
