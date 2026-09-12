@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 export interface JwtPayload {
   userId: string;
@@ -9,22 +9,22 @@ export interface JwtPayload {
 export function authMiddleware(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
     return res.status(401).json({
-      message: 'Token não informado.',
+      message: "Token não informado.",
     });
   }
 
-  const [, token] = authHeader.split(' ');
+  const [, token] = authHeader.split(" ");
 
   try {
     const decoded = jwt.verify(
       token,
-      process.env.JWT_SECRET as string
+      process.env.JWT_SECRET as string,
     ) as JwtPayload;
 
     (req as any).user = decoded;
@@ -32,7 +32,7 @@ export function authMiddleware(
     next();
   } catch {
     return res.status(401).json({
-      message: 'Token inválido.',
+      message: "Token inválido.",
     });
   }
 }
