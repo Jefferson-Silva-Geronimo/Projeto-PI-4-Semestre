@@ -5,11 +5,15 @@ import jwt from "jsonwebtoken";
 import { LoginDTO } from "./auth.types";
 import crypto from "crypto";
 import { ForgotPasswordDTO, ResetPasswordDTO } from "./auth.types";
+import { ClientUserFactory, UserFactory } from "./factories/user.factory";
 
 export class AuthService {
   static #instance: AuthService;
+  private readonly userFactory: UserFactory;
 
-  private constructor() {}
+  private constructor(userFactory: UserFactory = new ClientUserFactory()) {
+    this.userFactory = userFactory;
+  }
 
   public static get instance(): AuthService {
     if (!AuthService.#instance) {
@@ -31,11 +35,11 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(data.password, 10);
 
     const user = await prisma.user.create({
-      data: {
+      data: this.userFactory.create({
         name: data.name,
         email,
         passwordHash,
-      },
+      }),
     });
 
     return {
