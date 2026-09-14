@@ -10,10 +10,6 @@ export interface UserPersistenceData extends CreateUserData {
   role: UserRole;
 }
 
-/**
- * Factory Method para concentrar a criação de dados de cada perfil de usuário.
- * Novos perfis podem criar sua própria factory sem alterar AuthService.
- */
 export abstract class UserFactory {
   abstract create(data: CreateUserData): UserPersistenceData;
 }
