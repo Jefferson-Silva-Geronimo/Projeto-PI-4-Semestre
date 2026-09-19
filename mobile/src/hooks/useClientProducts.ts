@@ -3,64 +3,121 @@ import {
   useState,
 } from 'react';
 
-import axios from 'axios';
-
-import { useFocusEffect } from '@react-navigation/native';
+import {
+  useFocusEffect,
+} from '@react-navigation/native';
 
 import { productService } from '../services/product.service';
 
-import type { Product } from '../types/product';
+import type {
+  Pagination,
+} from '../types/api';
+
+import type {
+  Product,
+} from '../types/product';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
+
+const initialPagination: Pagination = {
+  page: 1,
+  pageSize: 20,
+  totalItems: 0,
+  totalPages: 0,
+};
 
 export function useClientProducts() {
-  const [products, setProducts] = useState<Product[]>(
-    []
-  );
+  const [products, setProducts] =
+    useState<Product[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] =
+    useState<Pagination>(
+      initialPagination,
+    );
 
-  const [errorMessage, setErrorMessage] =
-    useState('');
+  const [loading, setLoading] =
+    useState(true);
+
+  const [
+    refreshing,
+    setRefreshing,
+  ] = useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
 
   const loadProducts = useCallback(
-    async (): Promise<void> => {
+    async (
+      options?: {
+        refreshing?: boolean;
+        search?: string;
+      },
+    ): Promise<void> => {
+      const isRefreshing =
+        options?.refreshing === true;
+
       try {
-        setLoading(true);
+        if (isRefreshing) {
+          setRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
         setErrorMessage('');
 
         const result =
-          await productService.listActive();
+          await productService.listActive({
+            page: 1,
+            pageSize: 20,
+            search: options?.search,
+          });
 
-        setProducts(result);
+        setProducts(result.data);
+        setPagination(
+          result.pagination,
+        );
       } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          setErrorMessage(
-            error.response?.data?.message ??
-              'Não foi possível carregar os produtos.'
-          );
-        } else if (error instanceof Error) {
-          setErrorMessage(error.message);
-        } else {
-          setErrorMessage(
-            'Ocorreu um erro ao carregar os produtos.'
-          );
-        }
+        setErrorMessage(
+          getApiErrorMessage(
+            error,
+            'Não foi possível carregar os produtos.',
+          ),
+        );
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     },
-    []
+    [],
   );
+
+  const refreshProducts =
+    useCallback(
+      async (): Promise<void> => {
+        await loadProducts({
+          refreshing: true,
+        });
+      },
+      [loadProducts],
+    );
 
   useFocusEffect(
     useCallback(() => {
       void loadProducts();
-    }, [loadProducts])
+    }, [loadProducts]),
   );
 
   return {
     products,
+    pagination,
     loading,
+    refreshing,
     errorMessage,
     loadProducts,
+    refreshProducts,
   };
 }

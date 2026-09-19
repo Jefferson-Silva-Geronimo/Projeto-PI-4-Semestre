@@ -1,73 +1,100 @@
-import { useState } from 'react';
-import axios from 'axios';
+import {
+  useState,
+} from 'react';
 
-import { authService } from '../services/auth.service';
+import {
+  authService,
+} from '../services/auth.service';
 
-interface ForgotPasswordResult {
-  message: string;
-  token?: string;
-}
+import type {
+  ForgotPasswordResponse,
+} from '../types/auth';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
 
 export function useForgotPassword() {
-  const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [email, setEmail] =
+    useState('');
 
-  function validateEmail(): string | null {
-    const normalizedEmail = email.trim().toLowerCase();
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
+
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] = useState('');
+
+  function validateEmail():
+    string | null {
+    const normalizedEmail =
+      email.trim().toLowerCase();
 
     if (!normalizedEmail) {
       return 'Informe o seu e-mail.';
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailPattern.test(normalizedEmail)) {
+    if (
+      !emailPattern.test(
+        normalizedEmail,
+      )
+    ) {
       return 'Digite um e-mail válido.';
     }
 
     return null;
   }
 
-  async function handleForgotPassword(): Promise<
-    ForgotPasswordResult | null
-  > {
+  async function handleForgotPassword():
+    Promise<
+      ForgotPasswordResponse | null
+    > {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validateEmail();
+    const validationError =
+      validateEmail();
 
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(
+        validationError,
+      );
+
       return null;
     }
 
     try {
       setLoading(true);
 
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const result: ForgotPasswordResult =
-        await authService.forgotPassword(normalizedEmail);
+      const result =
+        await authService.forgotPassword(
+          email
+            .trim()
+            .toLowerCase(),
+        );
 
       setSuccessMessage(
         result.message ||
-          'As instruções de recuperação foram geradas.'
+          'Solicitação realizada com sucesso.',
       );
 
       return result;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setErrorMessage(
-          error.response?.data?.message ??
-            'Não foi possível solicitar a recuperação.'
-        );
-      } else {
-        setErrorMessage(
-          'Ocorreu um erro. Tente novamente.'
-        );
-      }
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          'Não foi possível solicitar a recuperação.',
+        ),
+      );
 
       return null;
     } finally {

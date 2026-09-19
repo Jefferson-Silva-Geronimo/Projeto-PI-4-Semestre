@@ -1,115 +1,202 @@
-import { useState } from 'react';
-import axios from 'axios';
+import {
+  useState,
+} from 'react';
 
-import { productService } from '../services/product.service';
+import {
+  productService,
+} from '../services/product.service';
+
+import {
+  parseCurrencyInputToCents,
+} from '../utils/currency';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
 
 export function useCreateProduct() {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  function validateForm(): string | null {
-    const normalizedName = name.trim();
-    const normalizedDescription = description.trim();
-    const normalizedImageUrl = imageUrl.trim();
+  const [name, setName] =
+    useState('');
 
-    if (!normalizedName) {
-      return 'Informe o nome do produto.';
-    }
+  const [
+    description,
+    setDescription,
+  ] = useState('');
 
-    if (!normalizedDescription) {
-      return 'Informe a descrição do produto.';
-    }
+  const [price, setPrice] =
+    useState('');
 
-    if (!price.trim()) {
-      return 'Informe o preço do produto.';
-    }
+  const [stock, setStock] =
+    useState('');
 
-    const normalizedPrice = price
-      .trim()
-      .replace(',', '.');
+  const [imageUrl, setImageUrl] =
+    useState('');
 
-    const priceAsNumber = Number(normalizedPrice);
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
+
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] = useState('');
+
+  function validateForm():
+    string | null {
+    const normalizedName =
+      name.trim();
+
+    const normalizedDescription =
+      description.trim();
+
+    const normalizedImageUrl =
+      imageUrl.trim();
 
     if (
-      !Number.isFinite(priceAsNumber) ||
-      priceAsNumber <= 0
+      normalizedName.length < 2
+    ) {
+      return (
+        'O nome deve possuir pelo menos ' +
+        '2 caracteres.'
+      );
+    }
+
+    if (
+      normalizedDescription.length <
+      5
+    ) {
+      return (
+        'A descrição deve possuir pelo menos ' +
+        '5 caracteres.'
+      );
+    }
+
+    const priceInCents =
+      parseCurrencyInputToCents(
+        price,
+      );
+
+    if (
+      priceInCents === null ||
+      priceInCents <= 0
     ) {
       return 'Informe um preço válido.';
     }
 
     if (!stock.trim()) {
-      return 'Informe a quantidade em estoque.';
+      return (
+        'Informe a quantidade em estoque.'
+      );
     }
 
-    const stockAsNumber = Number(stock.trim());
+    const stockAsNumber = Number(
+      stock.trim(),
+    );
 
     if (
-      !Number.isInteger(stockAsNumber) ||
+      !Number.isInteger(
+        stockAsNumber,
+      ) ||
       stockAsNumber < 0
     ) {
-      return 'Informe um estoque válido.';
+      return (
+        'Informe um estoque válido.'
+      );
     }
 
     if (!normalizedImageUrl) {
-      return 'Informe a URL da imagem.';
+      return (
+        'Informe a URL da imagem.'
+      );
+    }
+
+    try {
+      const parsedUrl = new URL(
+        normalizedImageUrl,
+      );
+
+      if (
+        parsedUrl.protocol !==
+          'http:' &&
+        parsedUrl.protocol !==
+          'https:'
+      ) {
+        return (
+          'Informe uma URL de imagem válida.'
+        );
+      }
+    } catch {
+      return (
+        'Informe uma URL de imagem válida.'
+      );
     }
 
     return null;
   }
 
-  async function handleCreateProduct(): Promise<boolean> {
+  async function handleCreateProduct():
+    Promise<boolean> {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validateForm();
+    const validationError =
+      validateForm();
 
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(
+        validationError,
+      );
+
+      return false;
+    }
+
+    const priceInCents =
+      parseCurrencyInputToCents(
+        price,
+      );
+
+    if (priceInCents === null) {
+      setErrorMessage(
+        'Informe um preço válido.',
+      );
+
       return false;
     }
 
     try {
       setLoading(true);
 
-      const priceAsNumber = Number(
-        price.trim().replace(',', '.')
-      );
-
-      const priceInCents = Math.round(
-        priceAsNumber * 100
-      );
-
       await productService.create({
         name: name.trim(),
-        description: description.trim(),
+        description:
+          description.trim(),
+
         priceInCents,
-        stock: Number(stock.trim()),
-        imageUrl: imageUrl.trim(),
+
+        stock: Number(
+          stock.trim(),
+        ),
+
+        imageUrl:
+          imageUrl.trim(),
       });
 
       setSuccessMessage(
-        'Produto cadastrado com sucesso.'
+        'Produto cadastrado com sucesso.',
       );
 
       return true;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setErrorMessage(
-          error.response?.data?.message ??
-            'Não foi possível cadastrar o produto.'
-        );
-      } else if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage(
-          'Ocorreu um erro ao cadastrar o produto.'
-        );
-      }
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          'Não foi possível cadastrar o produto.',
+        ),
+      );
 
       return false;
     } finally {

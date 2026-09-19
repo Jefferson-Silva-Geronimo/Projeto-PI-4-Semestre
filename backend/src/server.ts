@@ -1,25 +1,27 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import { authRoutes } from "./modules/auth/auth.routes";
-import { paymentRoutes } from "./modules/payments/payment.routes";
-import { productRoutes } from "./modules/products/product.routes";
+import { app } from "./app";
+import { env } from "./config/env";
+import { prisma } from "./database/prisma";
 
-const app = express();
-app.use(cors());
-app.use(express.json());
-app.get("/", (_, res) => {
-  return res.json({
-    message: "API PetShop Online",
-  });
+const server = app.listen(env.PORT, () => {
+  console.log(`Servidor rodando na porta ${env.PORT}`);
 });
 
-app.use("/auth", authRoutes);
-app.use("/products", productRoutes);
-app.use("/payments", paymentRoutes);
+async function shutdown(signal: string) {
+  console.log(`Sinal ${signal} recebido. Encerrando servidor...`);
 
-const PORT = 3000;
+  server.close(async () => {
+    await prisma.$disconnect();
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+    console.log("Servidor encerrado com segurança.");
+
+    process.exit(0);
+  });
+}
+
+process.on("SIGINT", () => {
+  void shutdown("SIGINT");
+});
+
+process.on("SIGTERM", () => {
+  void shutdown("SIGTERM");
 });

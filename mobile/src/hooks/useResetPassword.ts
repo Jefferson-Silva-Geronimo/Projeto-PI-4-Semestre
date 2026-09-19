@@ -1,7 +1,14 @@
-import { useState } from 'react';
-import axios from 'axios';
+import {
+  useState,
+} from 'react';
 
-import { authService } from '../services/auth.service';
+import {
+  authService,
+} from '../services/auth.service';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
 
 interface UseResetPasswordProps {
   token: string;
@@ -10,76 +17,105 @@ interface UseResetPasswordProps {
 export function useResetPassword({
   token,
 }: UseResetPasswordProps) {
-  const [password, setPassword] = useState('');
+  const [password, setPassword] =
+    useState('');
+
   const [
     passwordConfirmation,
     setPasswordConfirmation,
   ] = useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] =
-    useState('');
+  const [loading, setLoading] =
+    useState(false);
 
-  function validateForm(): string | null {
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
+
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] = useState('');
+
+  function validateForm():
+    string | null {
     if (!token) {
-      return 'Token de recuperação não informado.';
-    }
-
-    if (!password) {
-      return 'Informe a nova senha.';
+      return (
+        'Token de recuperação não informado.'
+      );
     }
 
     if (password.length < 8) {
-      return 'A senha deve possuir pelo menos 8 caracteres.';
+      return (
+        'A senha deve possuir pelo menos ' +
+        '8 caracteres.'
+      );
+    }
+
+    if (password.length > 72) {
+      return (
+        'A senha deve possuir no máximo ' +
+        '72 caracteres.'
+      );
     }
 
     if (!passwordConfirmation) {
-      return 'Confirme a nova senha.';
+      return (
+        'Confirme a nova senha.'
+      );
     }
 
-    if (password !== passwordConfirmation) {
-      return 'As senhas não são iguais.';
+    if (
+      password !==
+      passwordConfirmation
+    ) {
+      return (
+        'As senhas não são iguais.'
+      );
     }
 
     return null;
   }
 
-  async function handleResetPassword(): Promise<boolean> {
+  async function handleResetPassword():
+    Promise<boolean> {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validateForm();
+    const validationError =
+      validateForm();
 
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(
+        validationError,
+      );
+
       return false;
     }
 
     try {
       setLoading(true);
 
-      const result = await authService.resetPassword({
-        token,
-        password,
-      });
+      const result =
+        await authService.resetPassword({
+          token,
+          password,
+        });
 
       setSuccessMessage(
-        result.message ?? 'Senha alterada com sucesso.'
+        result.message ||
+          'Senha alterada com sucesso.',
       );
 
       return true;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setErrorMessage(
-          error.response?.data?.message ??
-            'Não foi possível alterar a senha.'
-        );
-      } else {
-        setErrorMessage(
-          'Ocorreu um erro. Tente novamente.'
-        );
-      }
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          'Não foi possível alterar a senha.',
+        ),
+      );
 
       return false;
     } finally {

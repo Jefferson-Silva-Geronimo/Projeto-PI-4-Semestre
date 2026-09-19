@@ -1,68 +1,114 @@
-import { useState } from 'react';
-import axios from 'axios';
+import {
+  useState,
+} from 'react';
 
-import { authService } from '../services/auth.service';
+import {
+  authService,
+} from '../services/auth.service';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
 
 export function useRegister() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] =
+  const [name, setName] =
     useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [email, setEmail] =
+    useState('');
 
-  function validateForm() {
-    const normalizedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
+  const [password, setPassword] =
+    useState('');
 
-    if (!normalizedName) {
-      return 'Informe o seu nome.';
+  const [
+    passwordConfirmation,
+    setPasswordConfirmation,
+  ] = useState('');
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
+
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] = useState('');
+
+  function validateForm():
+    string | null {
+    const normalizedName =
+      name.trim();
+
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    if (
+      normalizedName.length < 2
+    ) {
+      return (
+        'O nome deve possuir pelo menos ' +
+        '2 caracteres.'
+      );
     }
 
-    if (normalizedName.length < 3) {
-      return 'O nome deve possuir pelo menos 3 caracteres.';
-    }
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!normalizedEmail) {
-      return 'Informe o seu e-mail.';
-    }
-
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailPattern.test(normalizedEmail)) {
+    if (
+      !emailPattern.test(
+        normalizedEmail,
+      )
+    ) {
       return 'Digite um e-mail válido.';
     }
 
-    if (!password) {
-      return 'Informe a sua senha.';
+    if (password.length < 8) {
+      return (
+        'A senha deve possuir pelo menos ' +
+        '8 caracteres.'
+      );
     }
 
-    if (password.length < 8) {
-      return 'A senha deve possuir pelo menos 8 caracteres.';
+    if (password.length > 72) {
+      return (
+        'A senha deve possuir no máximo ' +
+        '72 caracteres.'
+      );
     }
 
     if (!passwordConfirmation) {
       return 'Confirme a sua senha.';
     }
 
-    if (password !== passwordConfirmation) {
-      return 'As senhas não são iguais.';
+    if (
+      password !==
+      passwordConfirmation
+    ) {
+      return (
+        'As senhas não são iguais.'
+      );
     }
 
     return null;
   }
 
-  async function handleRegister() {
+  async function handleRegister():
+    Promise<boolean> {
     setErrorMessage('');
     setSuccessMessage('');
 
-    const validationError = validateForm();
+    const validationError =
+      validateForm();
 
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(
+        validationError,
+      );
+
       return false;
     }
 
@@ -71,22 +117,26 @@ export function useRegister() {
 
       await authService.register({
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+
+        email: email
+          .trim()
+          .toLowerCase(),
+
         password,
       });
 
-      setSuccessMessage('Cadastro realizado com sucesso.');
+      setSuccessMessage(
+        'Cadastro realizado com sucesso.',
+      );
 
       return true;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setErrorMessage(
-          error.response?.data?.message ??
-            'Não foi possível realizar o cadastro.'
-        );
-      } else {
-        setErrorMessage('Ocorreu um erro. Tente novamente.');
-      }
+    } catch (error: unknown) {
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          'Não foi possível realizar o cadastro.',
+        ),
+      );
 
       return false;
     } finally {

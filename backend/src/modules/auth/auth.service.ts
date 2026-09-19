@@ -1,10 +1,18 @@
 import bcrypt from "bcrypt";
-import { RegisterDTO } from "./auth.types";
-import { prisma } from "../../database/prisma";
-import jwt from "jsonwebtoken";
-import { LoginDTO } from "./auth.types";
 import crypto from "crypto";
-import { ForgotPasswordDTO, ResetPasswordDTO } from "./auth.types";
+import jwt, { SignOptions } from "jsonwebtoken";
+
+import { env } from "../../config/env";
+import { prisma } from "../../database/prisma";
+import { AppError } from "../../shared/errors/AppError";
+
+import {
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+} from "./auth.schemas";
+
 import { ClientUserFactory, UserFactory } from "./factories/user.factory";
 
 export class AuthService {
@@ -22,21 +30,26 @@ export class AuthService {
 
     return AuthService.#instance;
   }
-  async register(data: RegisterDTO) {
-    const email = data.email.trim().toLocaleLowerCase();
+
+  async register(data: RegisterInput) {
+    const email = data.email.trim().toLowerCase();
+    const name = data.name.trim();
+
     const userExists = await prisma.user.findUnique({
       where: {
         email,
       },
     });
+
     if (userExists) {
-      throw new Error("Email já cadastrado.");
+      throw new AppError("E-mail já cadastrado.", 409, "EMAIL_IN_USE");
     }
-    const passwordHash = await bcrypt.hash(data.password, 10);
+
+    const passwordHash = await bcrypt.hash(data.password, 12);
 
     const user = await prisma.user.create({
       data: this.userFactory.create({
-        name: data.name,
+        name,
         email,
         passwordHash,
       }),
@@ -51,34 +64,48 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginDTO) {
+  async login(data: LoginInput) {
     const email = data.email.trim().toLowerCase();
+
     const user = await prisma.user.findUnique({
       where: {
         email,
       },
     });
+
     if (!user) {
-      throw new Error("E-mail ou senha inválidos.");
+      throw new AppError(
+        "E-mail ou senha inválidos.",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
+
     const passwordIsValid = await bcrypt.compare(
       data.password,
       user.passwordHash,
     );
 
     if (!passwordIsValid) {
-      throw new Error("E-mail ou senha inválidos.");
+      throw new AppError(
+        "E-mail ou senha inválidos.",
+        401,
+        "INVALID_CREDENTIALS",
+      );
     }
+
+    const tokenOptions: SignOptions = {
+      algorithm: "HS256",
+      expiresIn: env.JWT_EXPIRES_IN as SignOptions["expiresIn"],
+    };
 
     const token = jwt.sign(
       {
         userId: user.id,
         role: user.role,
       },
-      process.env.JWT_SECRET as string,
-      {
-        expiresIn: "7d",
-      },
+      env.JWT_SECRET,
+      tokenOptions,
     );
 
     return {
@@ -92,7 +119,7 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(data: ForgotPasswordDTO) {
+  async forgotPassword(data: ForgotPasswordInput) {
     const email = data.email.trim().toLowerCase();
 
     const user = await prisma.user.findUnique({
@@ -101,13 +128,30 @@ export class AuthService {
       },
     });
 
+    /*
+     * A resposta não revela se o e-mail existe.
+     * Isso reduz a possibilidade de enumeração de usuários.
+     */
     if (!user) {
-      throw new Error("Usuário não encontrado.");
+      return {
+        message:
+          "Se o e-mail estiver cadastrado, um token de recuperação será gerado.",
+      };
     }
+
+    /*
+     * Remove tokens anteriores para manter somente
+     * um token ativo por usuário.
+     */
+    await prisma.passwordResetToken.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
 
     const token = crypto.randomUUID();
 
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 30);
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
 
     await prisma.passwordResetToken.create({
       data: {
@@ -117,49 +161,74 @@ export class AuthService {
       },
     });
 
+    /*
+     * O token ainda é retornado porque o projeto
+     * não possui envio de e-mail nesta etapa.
+     */
     return {
       message: "Token gerado com sucesso.",
       token,
+      expiresAt,
     };
   }
-  async resetPassword(data: ResetPasswordDTO) {
+
+  async resetPassword(data: ResetPasswordInput) {
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: {
         token: data.token,
       },
-
-      include: {
-        user: true,
-      },
     });
 
     if (!resetToken) {
-      throw new Error("Token de recuperação inválido.");
+      throw new AppError(
+        "Token de recuperação inválido.",
+        400,
+        "INVALID_RESET_TOKEN",
+      );
     }
 
     if (resetToken.expiresAt < new Date()) {
-      throw new Error("Token expirado.");
-    }
-    const passwordHash = await bcrypt.hash(data.password, 10);
-    await prisma.user.update({
-      where: {
-        id: resetToken.user.id,
-      },
-      data: {
-        passwordHash,
-      },
-    });
+      await prisma.passwordResetToken.delete({
+        where: {
+          id: resetToken.id,
+        },
+      });
 
-    await prisma.passwordResetToken.delete({
-      where: {
-        id: resetToken.id,
-      },
-    });
+      throw new AppError(
+        "Token de recuperação expirado.",
+        400,
+        "EXPIRED_RESET_TOKEN",
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, 12);
+
+    /*
+     * A alteração da senha e a remoção dos tokens
+     * precisam ocorrer juntas.
+     */
+    await prisma.$transaction([
+      prisma.user.update({
+        where: {
+          id: resetToken.userId,
+        },
+        data: {
+          passwordHash,
+        },
+      }),
+
+      prisma.passwordResetToken.deleteMany({
+        where: {
+          userId: resetToken.userId,
+        },
+      }),
+    ]);
 
     return {
       message: "Senha alterada com sucesso.",
     };
   }
+
   async me(userId: string) {
     const user = await prisma.user.findUnique({
       where: {
@@ -168,7 +237,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new Error("Usuário não encontrado.");
+      throw new AppError("Usuário não encontrado.", 404, "USER_NOT_FOUND");
     }
 
     return {
@@ -177,6 +246,9 @@ export class AuthService {
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
   }
 }
+
+export const authService = AuthService.instance;
