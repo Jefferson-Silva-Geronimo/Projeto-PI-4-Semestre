@@ -1,14 +1,27 @@
-import { Request, Response } from "express";
+import {
+  Request,
+  Response,
+} from "express";
 
-import { orderService } from "./order.service";
+import {
+  orderService,
+} from "./order.service";
+
+import type {
+  OrderListQuery,
+} from "./order.schemas";
 
 export class OrderController {
-  static #instance: OrderController;
+  static #instance:
+    OrderController;
 
   private constructor() {}
 
-  public static get instance(): OrderController {
-    if (!OrderController.#instance) {
+  public static get instance():
+    OrderController {
+    if (
+      !OrderController.#instance
+    ) {
       OrderController.#instance =
         new OrderController();
     }
@@ -20,24 +33,33 @@ export class OrderController {
     req: Request,
     res: Response,
   ) {
-    const order = await orderService.create(
-      req.user!.userId,
-    );
+    const order =
+      await orderService.create(
+        req.user!.userId,
+      );
 
-    return res.status(201).json(order);
+    return res
+      .status(201)
+      .json(order);
   }
 
   async listForUser(
     req: Request,
     res: Response,
   ) {
+    const query =
+      res.locals
+        .validatedQuery as OrderListQuery;
+
     const result =
       await orderService.listForUser(
         req.user!.userId,
-        req.query as any,
+        query,
       );
 
-    return res.status(200).json(result);
+    return res
+      .status(200)
+      .json(result);
   }
 
   async findForUser(
@@ -53,19 +75,27 @@ export class OrderController {
         orderId,
       );
 
-    return res.status(200).json(order);
+    return res
+      .status(200)
+      .json(order);
   }
 
   async listForAdmin(
-    req: Request,
+    _req: Request,
     res: Response,
   ) {
+    const query =
+      res.locals
+        .validatedQuery as OrderListQuery;
+
     const result =
       await orderService.listForAdmin(
-        req.query as any,
+        query,
       );
 
-    return res.status(200).json(result);
+    return res
+      .status(200)
+      .json(result);
   }
 
   async findForAdmin(
@@ -80,7 +110,9 @@ export class OrderController {
         orderId,
       );
 
-    return res.status(200).json(order);
+    return res
+      .status(200)
+      .json(order);
   }
 
   async updateStatus(
@@ -96,7 +128,9 @@ export class OrderController {
         req.body,
       );
 
-    return res.status(200).json(order);
+    return res
+      .status(200)
+      .json(order);
   }
 }
 

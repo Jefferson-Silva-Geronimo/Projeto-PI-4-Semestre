@@ -7,15 +7,17 @@ import {
   useFocusEffect,
 } from '@react-navigation/native';
 
-import { productService } from '../services/product.service';
+import {
+  orderService,
+} from '../services/order.service';
 
 import type {
   Pagination,
 } from '../types/api';
 
 import type {
-  Product,
-} from '../types/product';
+  Order,
+} from '../types/order';
 
 import {
   getApiErrorMessage,
@@ -28,14 +30,16 @@ const initialPagination: Pagination = {
   totalPages: 0,
 };
 
-export function useClientProducts() {
-  const [products, setProducts] =
-    useState<Product[]>([]);
+export function useAdminOrders() {
+  const [orders, setOrders] =
+    useState<Order[]>([]);
 
-  const [pagination, setPagination] =
-    useState<Pagination>(
-      initialPagination,
-    );
+  const [
+    pagination,
+    setPagination,
+  ] = useState<Pagination>(
+    initialPagination,
+  );
 
   const [loading, setLoading] =
     useState(true);
@@ -50,11 +54,10 @@ export function useClientProducts() {
     setErrorMessage,
   ] = useState('');
 
-  const loadProducts = useCallback(
+  const loadOrders = useCallback(
     async (
       options?: {
         refreshing?: boolean;
-        search?: string;
       },
     ): Promise<void> => {
       const isRefreshing =
@@ -70,13 +73,12 @@ export function useClientProducts() {
         setErrorMessage('');
 
         const result =
-          await productService.listActive({
+          await orderService.listForAdmin({
             page: 1,
             pageSize: 20,
-            search: options?.search,
           });
 
-        setProducts(result.data);
+        setOrders(result.data);
         setPagination(
           result.pagination,
         );
@@ -84,7 +86,7 @@ export function useClientProducts() {
         setErrorMessage(
           getApiErrorMessage(
             error,
-            'Não foi possível carregar os produtos.',
+            'Não foi possível carregar os pedidos.',
           ),
         );
       } finally {
@@ -95,29 +97,29 @@ export function useClientProducts() {
     [],
   );
 
-  const refreshProducts =
+  const refreshOrders =
     useCallback(
       async (): Promise<void> => {
-        await loadProducts({
+        await loadOrders({
           refreshing: true,
         });
       },
-      [loadProducts],
+      [loadOrders],
     );
 
   useFocusEffect(
     useCallback(() => {
-      void loadProducts();
-    }, [loadProducts]),
+      void loadOrders();
+    }, [loadOrders]),
   );
 
   return {
-    products,
+    orders,
     pagination,
     loading,
     refreshing,
     errorMessage,
-    loadProducts,
-    refreshProducts,
+    loadOrders,
+    refreshOrders,
   };
 }

@@ -1,14 +1,27 @@
-import { Request, Response } from "express";
+import {
+  Request,
+  Response,
+} from "express";
 
-import { productService } from "./product.service";
+import {
+  productService,
+} from "./product.service";
+
+import type {
+  ProductListQuery,
+} from "./product.schemas";
 
 export class ProductController {
-  static #instance: ProductController;
+  static #instance:
+    ProductController;
 
   private constructor() {}
 
-  public static get instance(): ProductController {
-    if (!ProductController.#instance) {
+  public static get instance():
+    ProductController {
+    if (
+      !ProductController.#instance
+    ) {
       ProductController.#instance =
         new ProductController();
     }
@@ -31,12 +44,16 @@ export class ProductController {
   }
 
   async listActive(
-    req: Request,
+    _req: Request,
     res: Response,
   ) {
+    const query =
+      res.locals
+        .validatedQuery as ProductListQuery;
+
     const result =
       await productService.listActive(
-        req.query as any,
+        query,
       );
 
     return res
@@ -45,12 +62,16 @@ export class ProductController {
   }
 
   async listAll(
-    req: Request,
+    _req: Request,
     res: Response,
   ) {
+    const query =
+      res.locals
+        .validatedQuery as ProductListQuery;
+
     const result =
       await productService.listAll(
-        req.query as any,
+        query,
       );
 
     return res
@@ -66,9 +87,10 @@ export class ProductController {
       req.params.productId as string;
 
     const product =
-      await productService.findActiveById(
-        productId,
-      );
+      await productService
+        .findActiveById(
+          productId,
+        );
 
     return res
       .status(200)
@@ -83,9 +105,10 @@ export class ProductController {
       req.params.productId as string;
 
     const product =
-      await productService.findByIdForAdmin(
-        productId,
-      );
+      await productService
+        .findByIdForAdmin(
+          productId,
+        );
 
     return res
       .status(200)
@@ -118,10 +141,11 @@ export class ProductController {
       req.params.productId as string;
 
     const product =
-      await productService.updateStatus(
-        productId,
-        req.body.active,
-      );
+      await productService
+        .updateStatus(
+          productId,
+          req.body.active,
+        );
 
     return res
       .status(200)

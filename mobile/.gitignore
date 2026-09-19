@@ -59,3 +59,14 @@ desktop.ini
 *.tmp
 *.temp
 .cache/
+
+node_modules/
+.expo/
+dist/
+web-build/
+
+.env
+.env.local
+.env.*.local
+
+*.log

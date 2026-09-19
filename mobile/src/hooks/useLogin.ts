@@ -1,27 +1,47 @@
-import { useState } from 'react';
-import axios from 'axios';
+import {
+  useState,
+} from 'react';
 
 import { useAuth } from './useAuth';
+
+import {
+  getApiErrorMessage,
+} from '../utils/error';
 
 export function useLogin() {
   const { signIn } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] =
+    useState('');
 
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [password, setPassword] =
+    useState('');
 
-  function validateForm(): string | null {
-    const normalizedEmail = email.trim().toLowerCase();
+  const [loading, setLoading] =
+    useState(false);
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState('');
+
+  function validateForm():
+    string | null {
+    const normalizedEmail =
+      email.trim().toLowerCase();
 
     if (!normalizedEmail) {
       return 'Informe o seu e-mail.';
     }
 
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!emailPattern.test(normalizedEmail)) {
+    if (
+      !emailPattern.test(
+        normalizedEmail,
+      )
+    ) {
       return 'Digite um e-mail válido.';
     }
 
@@ -30,7 +50,10 @@ export function useLogin() {
     }
 
     if (password.length < 8) {
-      return 'A senha deve possuir pelo menos 8 caracteres.';
+      return (
+        'A senha deve possuir pelo menos ' +
+        '8 caracteres.'
+      );
     }
 
     return null;
@@ -39,35 +62,34 @@ export function useLogin() {
   async function handleLogin() {
     setErrorMessage('');
 
-    const validationError = validateForm();
+    const validationError =
+      validateForm();
 
     if (validationError) {
-      setErrorMessage(validationError);
+      setErrorMessage(
+        validationError,
+      );
+
       return null;
     }
 
     try {
       setLoading(true);
 
-      const result = await signIn({
-        email: email.trim().toLowerCase(),
+      return await signIn({
+        email: email
+          .trim()
+          .toLowerCase(),
+
         password,
       });
-
-      return result;
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        setErrorMessage(
-          error.response?.data?.message ??
-            'Não foi possível entrar. Verifique sua conexão.'
-        );
-      } else if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage(
-          'Ocorreu um erro. Tente novamente.'
-        );
-      }
+      setErrorMessage(
+        getApiErrorMessage(
+          error,
+          'Não foi possível entrar.',
+        ),
+      );
 
       return null;
     } finally {
