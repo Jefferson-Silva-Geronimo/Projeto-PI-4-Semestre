@@ -1,18 +1,31 @@
-import { Request, Response, NextFunction } from 'express';
+import { RequestHandler } from "express";
 
-export function adminMiddleware(req: Request, res: Response, next: NextFunction) {
-  const user = (req as any).user;
-  if (!user) {
-    return res.status(401).json({
-      message: 'Usuário não autenticado.',
-    });
+import { AppError } from "../shared/errors/AppError";
+
+export const adminMiddleware: RequestHandler = (
+  req,
+  _res,
+  next,
+) => {
+  if (!req.user) {
+    return next(
+      new AppError(
+        "Usuário não autenticado.",
+        401,
+        "UNAUTHORIZED",
+      ),
+    );
   }
 
-  if (user.role !== 'ADMIN') {
-    return res.status(403).json({
-      message: 'Acesso negado.',
-    });
+  if (req.user.role !== "ADMIN") {
+    return next(
+      new AppError(
+        "Acesso permitido somente para administradores.",
+        403,
+        "FORBIDDEN",
+      ),
+    );
   }
 
-  next();
-}
+  return next();
+};

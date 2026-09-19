@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { AuthService } from "./auth.service";
+
+import { authService } from "./auth.service";
 
 export class AuthController {
   static #instance: AuthController;
@@ -13,61 +14,64 @@ export class AuthController {
 
     return AuthController.#instance;
   }
-  private authService = AuthService.instance;
 
-  async register(req: Request, res: Response) {
-    try {
-      const user = await this.authService.register(req.body);
-      return res.status(201).json(user);
-    } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : "Erro ao cadastrar usuário.",
-      });
-    }
+  async register(
+    req: Request,
+    res: Response,
+  ) {
+    const user = await authService.register(
+      req.body,
+    );
+
+    return res.status(201).json(user);
   }
-  async login(req: Request, res: Response) {
-    try {
-      const result = await this.authService.login(req.body);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(401).json({
-        message:
-          error instanceof Error ? error.message : "Falha ao realizar login.",
-      });
-    }
+
+  async login(
+    req: Request,
+    res: Response,
+  ) {
+    const result = await authService.login(
+      req.body,
+    );
+
+    return res.status(200).json(result);
   }
-  async forgotPassword(req: Request, res: Response) {
-    try {
-      const result = await this.authService.forgotPassword(req.body);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : "Erro ao gerar token.",
-      });
-    }
+
+  async forgotPassword(
+    req: Request,
+    res: Response,
+  ) {
+    const result =
+      await authService.forgotPassword(
+        req.body,
+      );
+
+    return res.status(200).json(result);
   }
-  async resetPassword(req: Request, res: Response) {
-    try {
-      const result = await this.authService.resetPassword(req.body);
-      return res.status(200).json(result);
-    } catch (error) {
-      return res.status(400).json({
-        message:
-          error instanceof Error ? error.message : "Erro ao redefinir senha.",
-      });
-    }
+
+  async resetPassword(
+    req: Request,
+    res: Response,
+  ) {
+    const result =
+      await authService.resetPassword(
+        req.body,
+      );
+
+    return res.status(200).json(result);
   }
-  async me(req: Request, res: Response) {
-    try {
-      const user = await this.authService.me((req as any).user.userId);
-      return res.status(200).json(user);
-    } catch (error) {
-      return res.status(404).json({
-        message:
-          error instanceof Error ? error.message : "Usuário não encontrado.",
-      });
-    }
+
+  async me(
+    req: Request,
+    res: Response,
+  ) {
+    const user = await authService.me(
+      req.user!.userId,
+    );
+
+    return res.status(200).json(user);
   }
 }
+
+export const authController =
+  AuthController.instance;

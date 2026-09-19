@@ -6,3 +6,6 @@ node_modules
 /generated/prisma
 !.env.production.example
 !.env.example
+dist/
+coverage/
+*.log
