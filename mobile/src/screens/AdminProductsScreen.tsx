@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   RefreshControl,
@@ -17,6 +16,7 @@ import type {
 
 import { useAdminProducts } from '../hooks/useAdminProducts';
 import { useProductStatus } from '../hooks/useProductStatus';
+import { confirmAction } from '../utils/confirm';
 
 import type {
   AdminStackParamList,
@@ -53,39 +53,38 @@ export default function AdminProductsScreen({
     changeStatus,
   } = useProductStatus();
 
-  function handleChangeStatus(product: Product): void {
+  async function handleChangeStatus(
+    product: Product,
+  ): Promise<void> {
     const nextActive = !product.active;
 
-    Alert.alert(
-      nextActive ? 'Reativar produto' : 'Inativar produto',
-      nextActive
+    const confirmed = await confirmAction({
+      title: nextActive
+        ? 'Reativar produto'
+        : 'Inativar produto',
+      message: nextActive
         ? `Deseja reativar ${product.name}?`
         : `Deseja inativar ${product.name}? O produto deixará de aparecer no catálogo do cliente.`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: nextActive ? 'Reativar' : 'Inativar',
-          style: nextActive ? 'default' : 'destructive',
-          onPress: () => {
-            void (async () => {
-              const changed = await changeStatus(
-                product.id,
-                nextActive,
-              );
+      confirmText: nextActive
+        ? 'Reativar'
+        : 'Inativar',
+      destructive: !nextActive,
+    });
 
-              if (changed) {
-                await loadProducts({
-                  refreshing: true,
-                });
-              }
-            })();
-          },
-        },
-      ],
+    if (!confirmed) {
+      return;
+    }
+
+    const changed = await changeStatus(
+      product.id,
+      nextActive,
     );
+
+    if (changed) {
+      await loadProducts({
+        refreshing: true,
+      });
+    }
   }
 
   function renderProduct({
@@ -160,7 +159,9 @@ export default function AdminProductsScreen({
               ]}
               activeOpacity={0.8}
               disabled={processing}
-              onPress={() => handleChangeStatus(item)}
+              onPress={() => {
+                void handleChangeStatus(item);
+              }}
               accessibilityRole="button"
               accessibilityLabel={
                 item.active

@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   RefreshControl,
@@ -16,6 +15,7 @@ import type {
 } from '@react-navigation/native-stack';
 
 import { useCart } from '../hooks/useCart';
+import { confirmAction } from '../utils/confirm';
 
 import type {
   CartItem,
@@ -52,44 +52,32 @@ export default function CartScreen({
     clearCart,
   } = useCart();
 
-  function handleRemoveItem(item: CartItem): void {
-    Alert.alert(
-      'Remover produto',
-      `Deseja remover ${item.product.name} do carrinho?`,
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: () => {
-            void removeItem(item.id);
-          },
-        },
-      ],
-    );
+  async function handleRemoveItem(
+    item: CartItem,
+  ): Promise<void> {
+    const confirmed = await confirmAction({
+      title: 'Remover produto',
+      message: `Deseja remover ${item.product.name} do carrinho?`,
+      confirmText: 'Remover',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      await removeItem(item.id);
+    }
   }
 
-  function handleClearCart(): void {
-    Alert.alert(
-      'Limpar carrinho',
-      'Deseja remover todos os produtos do carrinho?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Limpar',
-          style: 'destructive',
-          onPress: () => {
-            void clearCart();
-          },
-        },
-      ],
-    );
+  async function handleClearCart(): Promise<void> {
+    const confirmed = await confirmAction({
+      title: 'Limpar carrinho',
+      message: 'Deseja remover todos os produtos do carrinho?',
+      confirmText: 'Limpar',
+      destructive: true,
+    });
+
+    if (confirmed) {
+      await clearCart();
+    }
   }
 
   function renderItem({
@@ -194,7 +182,9 @@ export default function CartScreen({
           <TouchableOpacity
             activeOpacity={0.7}
             disabled={processing}
-            onPress={() => handleRemoveItem(item)}
+            onPress={() => {
+              void handleRemoveItem(item);
+            }}
             accessibilityRole="button"
             accessibilityLabel={`Remover ${item.product.name} do carrinho`}
           >
@@ -286,7 +276,9 @@ export default function CartScreen({
         <TouchableOpacity
           activeOpacity={0.7}
           disabled={cart.items.length === 0 || clearing}
-          onPress={handleClearCart}
+          onPress={() => {
+            void handleClearCart();
+          }}
           accessibilityRole="button"
           accessibilityLabel="Limpar carrinho"
           accessibilityState={{
