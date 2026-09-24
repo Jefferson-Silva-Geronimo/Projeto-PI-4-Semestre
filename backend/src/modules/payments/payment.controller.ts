@@ -35,6 +35,27 @@ function getQueryStringValue(
   return undefined;
 }
 
+function getWebhookDataId(
+  req: Request,
+): string | string[] | undefined {
+  const candidates = [
+    req.query["data.id"],
+    req.query.id,
+    req.body?.data?.id,
+    req.body?.id,
+  ];
+
+  for (const candidate of candidates) {
+    const value = getQueryStringValue(candidate);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
 export class PaymentController {
   static #instance: PaymentController;
 
@@ -65,9 +86,7 @@ export class PaymentController {
     req: Request,
     res: Response,
   ) {
-    const dataId = getQueryStringValue(
-      req.query["data.id"],
-    );
+    const dataId = getWebhookDataId(req);
 
     try {
       WebhookSignatureValidator.validate({
@@ -78,6 +97,19 @@ export class PaymentController {
       });
     } catch (error) {
       if (error instanceof InvalidWebhookSignatureError) {
+        console.warn(
+          "Assinatura do webhook Mercado Pago rejeitada.",
+          {
+            hasSignature: Boolean(
+              req.headers["x-signature"],
+            ),
+            hasRequestId: Boolean(
+              req.headers["x-request-id"],
+            ),
+            hasDataId: Boolean(dataId),
+          },
+        );
+
         throw new AppError(
           "Assinatura do webhook inválida.",
           401,
