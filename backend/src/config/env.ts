@@ -38,6 +38,12 @@ const envSchema = z.object({
       1,
       "MERCADOPAGO_ACCESS_TOKEN não foi informado.",
     ),
+
+  MERCADOPAGO_RETURN_URL: z
+    .string()
+    .url(
+      "MERCADOPAGO_RETURN_URL deve ser uma URL válida.",
+    ),
 });
 
 const result = envSchema.safeParse(process.env);

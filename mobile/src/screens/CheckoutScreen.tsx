@@ -37,18 +37,18 @@ export default function CheckoutScreen({
     submitting,
     errorMessage,
     reloadCart,
-    confirmOrder,
+    startCheckout,
   } = useCheckout();
 
-  async function handleConfirmOrder(): Promise<void> {
-    const order = await confirmOrder();
+  async function handleStartCheckout(): Promise<void> {
+    const orderId = await startCheckout();
 
-    if (!order) {
+    if (!orderId) {
       return;
     }
 
     navigation.replace('OrderDetails', {
-      orderId: order.id,
+      orderId,
     });
   }
 
@@ -208,7 +208,7 @@ export default function CheckoutScreen({
           </Text>
 
           <Text style={styles.noticeText}>
-            Nesta etapa, o pedido será confirmado sem pagamento online. A integração com o Mercado Pago será adicionada posteriormente.
+            Você será direcionado ao Mercado Pago para concluir o pagamento com segurança.
           </Text>
         </View>
 
@@ -237,10 +237,10 @@ export default function CheckoutScreen({
             cart.hasUnavailableItems
           }
           onPress={() => {
-            void handleConfirmOrder();
+            void handleStartCheckout();
           }}
           accessibilityRole="button"
-          accessibilityLabel="Confirmar pedido"
+          accessibilityLabel="Ir para pagamento"
           accessibilityState={{
             disabled:
               submitting ||
@@ -251,8 +251,8 @@ export default function CheckoutScreen({
         >
           <Text style={styles.confirmButtonText}>
             {submitting
-              ? 'Confirmando pedido...'
-              : 'Confirmar pedido'}
+              ? 'Abrindo pagamento...'
+              : 'Ir para pagamento'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

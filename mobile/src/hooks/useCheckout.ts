@@ -4,6 +4,12 @@ import {
 } from 'react';
 
 import {
+  Platform,
+} from 'react-native';
+
+import * as WebBrowser from 'expo-web-browser';
+
+import {
   useFocusEffect,
 } from '@react-navigation/native';
 
@@ -12,16 +18,16 @@ import {
 } from '../services/cart.service';
 
 import {
-  orderService,
-} from '../services/order.service';
+  MERCADOPAGO_RETURN_URL,
+} from '../config/payment';
+
+import {
+  paymentService,
+} from '../services/payment.service';
 
 import type {
   Cart,
 } from '../types/cart';
-
-import type {
-  Order,
-} from '../types/order';
 
 import {
   getApiErrorMessage,
@@ -92,9 +98,9 @@ export function useCheckout() {
     [],
   );
 
-  const confirmOrder =
+  const startCheckout =
     useCallback(
-      async (): Promise<Order | null> => {
+      async (): Promise<string | null> => {
         setErrorMessage('');
 
         if (
@@ -120,17 +126,34 @@ export function useCheckout() {
         try {
           setSubmitting(true);
 
-          const order =
-            await orderService.create();
+          const checkout =
+            await paymentService.createCheckout();
 
           setCart(emptyCart);
 
-          return order;
+          try {
+            if (Platform.OS === 'web') {
+              await WebBrowser.openBrowserAsync(
+                checkout.initPoint,
+              );
+            } else {
+              await WebBrowser.openAuthSessionAsync(
+                checkout.initPoint,
+                MERCADOPAGO_RETURN_URL,
+              );
+            }
+          } catch {
+            setErrorMessage(
+              'O pedido foi criado. Acesse os pedidos para retomar o pagamento.',
+            );
+          }
+
+          return checkout.orderId;
         } catch (error: unknown) {
           setErrorMessage(
             getApiErrorMessage(
               error,
-              'Não foi possível confirmar o pedido.',
+              'Não foi possível iniciar o pagamento.',
             ),
           );
 
@@ -160,6 +183,6 @@ export function useCheckout() {
     submitting,
     errorMessage,
     reloadCart,
-    confirmOrder,
+    startCheckout,
   };
 }

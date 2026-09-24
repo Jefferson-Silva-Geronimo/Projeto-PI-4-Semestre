@@ -32,6 +32,7 @@ type Props = NativeStackScreenProps<
 >;
 
 const statusLabels: Record<OrderStatus, string> = {
+    PENDING_PAYMENT: 'Aguardando pagamento',
     CONFIRMED: 'Confirmado',
     PROCESSING: 'Em processamento',
     COMPLETED: 'Concluído',

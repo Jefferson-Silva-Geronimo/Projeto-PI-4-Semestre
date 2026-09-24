@@ -3,6 +3,7 @@ import type {
 } from './api';
 
 export type OrderStatus =
+  | 'PENDING_PAYMENT'
   | 'CONFIRMED'
   | 'PROCESSING'
   | 'COMPLETED'

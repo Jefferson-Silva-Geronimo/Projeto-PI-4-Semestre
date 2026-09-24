@@ -11,6 +11,9 @@ import {
   prisma,
 } from "../../database/prisma";
 import {
+  env,
+} from "../../config/env";
+import {
   AppError,
 } from "../../shared/errors/AppError";
 
@@ -322,6 +325,18 @@ export class PaymentService {
           body: {
             external_reference:
               checkout.payment.externalReference,
+
+            back_urls: {
+              success:
+                env.MERCADOPAGO_RETURN_URL,
+              pending:
+                env.MERCADOPAGO_RETURN_URL,
+              failure:
+                env.MERCADOPAGO_RETURN_URL,
+            },
+
+            auto_return: "approved",
+
             payer: {
               name: checkout.order.user.name,
               email: checkout.order.user.email,
