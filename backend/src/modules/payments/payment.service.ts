@@ -341,6 +341,9 @@ export class PaymentService {
             external_reference:
               checkout.payment.externalReference,
 
+            notification_url:
+              env.MERCADOPAGO_WEBHOOK_URL,
+
             back_urls: {
               success:
                 env.MERCADOPAGO_RETURN_URL,

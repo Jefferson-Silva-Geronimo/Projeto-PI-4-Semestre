@@ -51,6 +51,12 @@ const envSchema = z.object({
       1,
       "MERCADOPAGO_WEBHOOK_SECRET não foi informado.",
     ),
+
+  MERCADOPAGO_WEBHOOK_URL: z
+    .string()
+    .url(
+      "MERCADOPAGO_WEBHOOK_URL deve ser uma URL válida.",
+    ),
 });
 
 const result = envSchema.safeParse(process.env);
