@@ -31,6 +31,13 @@ const envSchema = z.object({
   CORS_ORIGIN: z
     .string()
     .default("*"),
+
+  MERCADOPAGO_ACCESS_TOKEN: z
+    .string()
+    .min(
+      1,
+      "MERCADOPAGO_ACCESS_TOKEN não foi informado.",
+    ),
 });
 
 const result = envSchema.safeParse(process.env);
