@@ -14,10 +14,23 @@ enum UserRole {
 }
 
 enum OrderStatus {
+  PENDING_PAYMENT
   CONFIRMED
   PROCESSING
   COMPLETED
   CANCELLED
+}
+
+enum PaymentProvider {
+  MERCADO_PAGO
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  REFUNDED
 }
 
 model User {
@@ -98,10 +111,30 @@ model Order {
   updatedAt    DateTime    @updatedAt
   user         User        @relation(fields: [userId], references: [id])
   items        OrderItem[]
+  payments     Payment[]
 
   @@index([userId, createdAt])
   @@index([status, createdAt])
   @@map("orders")
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  orderId           String
+  provider          PaymentProvider
+  status            PaymentStatus   @default(PENDING)
+  amountInCents     Int
+  externalReference String          @unique
+  preferenceId      String?         @unique
+  providerPaymentId String?         @unique
+  providerStatus    String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@index([status, createdAt])
+  @@map("payments")
 }
 
 model OrderItem {

@@ -402,6 +402,8 @@ export class OrderService {
         OrderStatus,
         OrderStatus[]
       > = {
+        PENDING_PAYMENT: [],
+
         CONFIRMED: [
           "PROCESSING",
           "CANCELLED",
