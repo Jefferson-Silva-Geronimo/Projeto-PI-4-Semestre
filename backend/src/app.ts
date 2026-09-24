@@ -9,6 +9,7 @@ import { errorMiddleware } from "./middlewares/error.middleware";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { cartRoutes } from "./modules/cart/cart.routes";
 import { orderRoutes } from "./modules/orders/order.routes";
+import { paymentRoutes } from "./modules/payments/payment.routes";
 import { productRoutes } from "./modules/products/product.routes";
 
 import { AppError } from "./shared/errors/AppError";
@@ -67,6 +68,7 @@ app.use("/auth", authRoutes);
 app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/orders", orderRoutes);
+app.use("/payments", paymentRoutes);
 
 app.use((_req, _res, next) => {
   return next(
