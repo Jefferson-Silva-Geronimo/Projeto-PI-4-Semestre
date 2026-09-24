@@ -44,6 +44,13 @@ const envSchema = z.object({
     .url(
       "MERCADOPAGO_RETURN_URL deve ser uma URL válida.",
     ),
+
+  MERCADOPAGO_WEBHOOK_SECRET: z
+    .string()
+    .min(
+      1,
+      "MERCADOPAGO_WEBHOOK_SECRET não foi informado.",
+    ),
 });
 
 const result = envSchema.safeParse(process.env);

@@ -16,6 +16,13 @@ import {
 
 const paymentRoutes = Router();
 
+paymentRoutes.post(
+  "/webhook",
+  paymentController.receiveWebhook.bind(
+    paymentController,
+  ),
+);
+
 paymentRoutes.use(authMiddleware);
 
 paymentRoutes.post(

@@ -2,6 +2,7 @@ import crypto from "crypto";
 
 import {
   Preference,
+  Payment,
 } from "mercadopago";
 import {
   Prisma,
@@ -47,11 +48,25 @@ interface PendingCheckout {
   order: OrderWithDetails;
 }
 
+type ProviderPaymentStatus =
+  | "approved"
+  | "pending"
+  | "in_process"
+  | "in_mediation"
+  | "authorized"
+  | "rejected"
+  | "cancelled"
+  | "refunded"
+  | "charged_back";
+
 export class PaymentService {
   static #instance: PaymentService;
 
   private readonly preferenceClient =
     new Preference(mercadoPagoClient);
+
+  private readonly paymentClient =
+    new Payment(mercadoPagoClient);
 
   private constructor() {}
 
@@ -392,6 +407,174 @@ export class PaymentService {
         "MERCADO_PAGO_PREFERENCE_CREATION_FAILED",
       );
     }
+  }
+
+  async synchronizeWebhookPayment(
+    providerPaymentId: string,
+  ): Promise<void> {
+    const providerPayment =
+      await this.paymentClient.get({
+        id: providerPaymentId,
+      });
+
+    if (
+      !providerPayment.external_reference ||
+      typeof providerPayment.transaction_amount !== "number" ||
+      !providerPayment.status
+    ) {
+      return;
+    }
+
+    const paymentStatus =
+      providerPayment.status as ProviderPaymentStatus;
+
+    const statusMapping = {
+      approved: {
+        paymentStatus: "APPROVED",
+        orderStatus: "CONFIRMED",
+        releasesStock: false,
+      },
+      pending: {
+        paymentStatus: "PENDING",
+        orderStatus: "PENDING_PAYMENT",
+        releasesStock: false,
+      },
+      in_process: {
+        paymentStatus: "PENDING",
+        orderStatus: "PENDING_PAYMENT",
+        releasesStock: false,
+      },
+      in_mediation: {
+        paymentStatus: "PENDING",
+        orderStatus: "PENDING_PAYMENT",
+        releasesStock: false,
+      },
+      authorized: {
+        paymentStatus: "PENDING",
+        orderStatus: "PENDING_PAYMENT",
+        releasesStock: false,
+      },
+      rejected: {
+        paymentStatus: "REJECTED",
+        orderStatus: "CANCELLED",
+        releasesStock: true,
+      },
+      cancelled: {
+        paymentStatus: "CANCELLED",
+        orderStatus: "CANCELLED",
+        releasesStock: true,
+      },
+      refunded: {
+        paymentStatus: "REFUNDED",
+        orderStatus: "CANCELLED",
+        releasesStock: false,
+      },
+      charged_back: {
+        paymentStatus: "REJECTED",
+        orderStatus: "CANCELLED",
+        releasesStock: false,
+      },
+    } as const;
+
+    const mapping =
+      statusMapping[paymentStatus];
+
+    if (!mapping) {
+      return;
+    }
+
+    const amountInCents = Math.round(
+      providerPayment.transaction_amount * 100,
+    );
+
+    await prisma.$transaction(
+      async (transaction) => {
+        const payment =
+          await transaction.payment.findUnique({
+            where: {
+              externalReference:
+                providerPayment.external_reference!,
+            },
+
+            include: {
+              order: {
+                include: {
+                  items: true,
+                },
+              },
+            },
+          });
+
+        if (
+          !payment ||
+          payment.amountInCents !== amountInCents
+        ) {
+          return;
+        }
+
+        const isOutdatedPendingNotification =
+          mapping.paymentStatus === "PENDING" &&
+          payment.status !== "PENDING";
+
+        if (isOutdatedPendingNotification) {
+          return;
+        }
+
+        await transaction.payment.update({
+          where: {
+            id: payment.id,
+          },
+
+          data: {
+            providerPaymentId,
+            providerStatus: providerPayment.status,
+            status: mapping.paymentStatus,
+          },
+        });
+
+        if (
+          mapping.releasesStock &&
+          payment.status === "PENDING" &&
+          payment.order.status === "PENDING_PAYMENT"
+        ) {
+          for (const item of payment.order.items) {
+            await transaction.product.update({
+              where: {
+                id: item.productId,
+              },
+
+              data: {
+                stock: {
+                  increment: item.quantity,
+                },
+              },
+            });
+          }
+        }
+
+        if (
+          payment.order.status === "PENDING_PAYMENT" ||
+          mapping.orderStatus === "CANCELLED"
+        ) {
+          await transaction.order.update({
+            where: {
+              id: payment.orderId,
+            },
+
+            data: {
+              status: mapping.orderStatus,
+            },
+          });
+        }
+      },
+      {
+        isolationLevel:
+          Prisma.TransactionIsolationLevel
+            .Serializable,
+        maxWait: 5000,
+        timeout: 10000,
+      },
+    );
   }
 }
 
