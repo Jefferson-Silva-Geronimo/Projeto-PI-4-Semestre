@@ -152,7 +152,7 @@ export class ProductController {
       .json(product);
   }
 
-  async deactivate(
+  async remove(
     req: Request,
     res: Response,
   ) {
@@ -160,7 +160,7 @@ export class ProductController {
       req.params.productId as string;
 
     const result =
-      await productService.deactivate(
+      await productService.remove(
         productId,
       );
 

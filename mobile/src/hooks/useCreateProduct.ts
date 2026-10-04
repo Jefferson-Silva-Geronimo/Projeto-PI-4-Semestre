@@ -6,6 +6,11 @@ import {
   productService,
 } from '../services/product.service';
 
+import type {
+  ProductCategory,
+  Species,
+} from '../types/product';
+
 import {
   parseCurrencyInputToCents,
 } from '../utils/currency';
@@ -31,6 +36,16 @@ export function useCreateProduct() {
 
   const [imageUrl, setImageUrl] =
     useState('');
+
+  const [category, setCategory] =
+    useState<ProductCategory>(
+      'RACAO',
+    );
+
+  const [species, setSpecies] =
+    useState<Species | null>(
+      null,
+    );
 
   const [loading, setLoading] =
     useState(false);
@@ -183,6 +198,9 @@ export function useCreateProduct() {
 
         imageUrl:
           imageUrl.trim(),
+
+        category,
+        species,
       });
 
       setSuccessMessage(
@@ -210,9 +228,13 @@ export function useCreateProduct() {
     price,
     stock,
     imageUrl,
+    category,
+    species,
     loading,
     errorMessage,
     successMessage,
+    setCategory,
+    setSpecies,
     setName,
     setDescription,
     setPrice,

@@ -21,6 +21,21 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ProductCategory {
+  RACAO
+  PETISCOS
+  HIGIENE
+  BRINQUEDOS
+  ACESSORIOS
+  FARMACIA
+}
+
+enum Species {
+  CAO
+  GATO
+  OUTRO
+}
+
 enum PaymentProvider {
   MERCADO_PAGO
 }
@@ -61,15 +76,17 @@ model PasswordResetToken {
 }
 
 model Product {
-  id           String     @id @default(uuid())
+  id           String          @id @default(uuid())
   name         String
   description  String
   priceInCents Int
   stock        Int
   imageUrl     String
-  active       Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  category     ProductCategory @default(ACESSORIOS)
+  species      Species?
+  active       Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   cartItems    CartItem[]
 
   @@index([active, createdAt])

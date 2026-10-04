@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
@@ -21,6 +22,11 @@ import {
   getApiErrorMessage,
 } from '../utils/error';
 
+export type ProductStatusFilter =
+  | 'ALL'
+  | 'ACTIVE'
+  | 'INACTIVE';
+
 const initialPagination: Pagination = {
   page: 1,
   pageSize: 20,
@@ -37,8 +43,20 @@ export function useAdminProducts() {
       initialPagination,
     );
 
+  const [search, setSearch] =
+    useState('');
+
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] = useState<ProductStatusFilter>(
+    'ALL',
+  );
+
   const [loading, setLoading] =
     useState(true);
+
+  const loadedRef = useRef(false);
 
   const [
     refreshing,
@@ -54,11 +72,11 @@ export function useAdminProducts() {
     async (
       options?: {
         refreshing?: boolean;
-        search?: string;
       },
     ): Promise<void> => {
       const isRefreshing =
-        options?.refreshing === true;
+        options?.refreshing === true ||
+        loadedRef.current;
 
       try {
         if (isRefreshing) {
@@ -73,7 +91,12 @@ export function useAdminProducts() {
           await productService.listAll({
             page: 1,
             pageSize: 20,
-            search: options?.search,
+            search,
+            active:
+              statusFilter === 'ALL'
+                ? undefined
+                : statusFilter ===
+                  'ACTIVE',
           });
 
         setProducts(result.data);
@@ -88,11 +111,12 @@ export function useAdminProducts() {
           ),
         );
       } finally {
+        loadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [search, statusFilter],
   );
 
   const refreshProducts =
@@ -107,7 +131,11 @@ export function useAdminProducts() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadProducts();
+      const timer = setTimeout(() => {
+        void loadProducts();
+      }, 300);
+
+      return () => clearTimeout(timer);
     }, [loadProducts]),
   );
 
@@ -117,6 +145,10 @@ export function useAdminProducts() {
     loading,
     refreshing,
     errorMessage,
+    search,
+    statusFilter,
+    setSearch,
+    setStatusFilter,
     loadProducts,
     refreshProducts,
   };

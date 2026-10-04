@@ -11,10 +11,16 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import ChipGroup from '../components/ChipGroup';
 import { useCreateProduct } from '../hooks/useCreateProduct';
 import { authStyles as styles } from '../theme/authStyles';
 
 import type { AdminStackParamList } from '../types/navigation';
+
+import {
+  categoryOptions,
+  speciesOptions,
+} from '../types/product';
 
 type Props = NativeStackScreenProps<
   AdminStackParamList,
@@ -30,6 +36,8 @@ export default function CreateProductScreen({
     price,
     stock,
     imageUrl,
+    category,
+    species,
     loading,
     errorMessage,
     successMessage,
@@ -38,6 +46,8 @@ export default function CreateProductScreen({
     setPrice,
     setStock,
     setImageUrl,
+    setCategory,
+    setSpecies,
     handleCreateProduct,
   } = useCreateProduct();
 
@@ -216,6 +226,36 @@ export default function CreateProductScreen({
                 Use o endereço direto da imagem,
                 começando com http:// ou https://.
               </Text>
+            </View>
+
+            <View style={styles.productField}>
+              <Text style={styles.productFieldLabel}>
+                Categoria
+              </Text>
+
+              <ChipGroup
+                options={categoryOptions}
+                selected={category}
+                onSelect={(value) =>
+                  value && setCategory(value)
+                }
+                disabled={loading}
+              />
+            </View>
+
+            <View style={styles.productField}>
+              <Text style={styles.productFieldLabel}>
+                Espécie
+              </Text>
+
+              <ChipGroup
+                options={speciesOptions}
+                selected={species}
+                onSelect={setSpecies}
+                allowClear
+                allLabel="Todas"
+                disabled={loading}
+              />
             </View>
 
             {errorMessage ? (

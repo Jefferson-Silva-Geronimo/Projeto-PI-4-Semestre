@@ -65,9 +65,45 @@ export function useProductStatus() {
       [],
     );
 
+  const removeProduct =
+    useCallback(
+      async (
+        productId: string,
+      ): Promise<boolean> => {
+        try {
+          setProcessingProductId(
+            productId,
+          );
+
+          setErrorMessage('');
+
+          await productService.remove(
+            productId,
+          );
+
+          return true;
+        } catch (error: unknown) {
+          setErrorMessage(
+            getApiErrorMessage(
+              error,
+              'Não foi possível excluir o produto.',
+            ),
+          );
+
+          return false;
+        } finally {
+          setProcessingProductId(
+            null,
+          );
+        }
+      },
+      [],
+    );
+
   return {
     processingProductId,
     errorMessage,
     changeStatus,
+    removeProduct,
   };
 }

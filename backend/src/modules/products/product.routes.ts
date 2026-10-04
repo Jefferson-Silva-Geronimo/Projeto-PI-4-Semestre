@@ -64,7 +64,7 @@ productRoutes.delete(
   "/:productId",
   adminMiddleware,
   validate(productIdParamsSchema, "params"),
-  productController.deactivate.bind(productController),
+  productController.remove.bind(productController),
 );
 
 productRoutes.get(

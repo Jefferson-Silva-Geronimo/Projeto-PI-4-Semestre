@@ -51,29 +51,43 @@ export class ProductService {
     };
   }
 
-  private createSearchFilter(
-    search?: string,
+  private createFilter(
+    query: ProductListQuery,
   ): Prisma.ProductWhereInput {
-    if (!search) {
-      return {};
+    const { search, category, species } = query;
+
+    const conditions: Prisma.ProductWhereInput[] = [];
+
+    if (search) {
+      conditions.push({
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: "insensitive",
+            },
+          },
+        ],
+      });
     }
 
-    return {
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          description: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      ],
-    };
+    if (category) {
+      conditions.push({ category });
+    }
+
+    if (species) {
+      conditions.push({
+        OR: [{ species }, { species: null }],
+      });
+    }
+
+    return { AND: conditions };
   }
 
   async create(
@@ -88,6 +102,8 @@ export class ProductService {
           data.priceInCents,
         stock: data.stock,
         imageUrl: data.imageUrl.trim(),
+        category: data.category,
+        species: data.species ?? null,
       },
     });
 
@@ -100,12 +116,11 @@ export class ProductService {
     const {
       page,
       pageSize,
-      search,
     } = query;
 
     const where: Prisma.ProductWhereInput = {
       active: true,
-      ...this.createSearchFilter(search),
+      ...this.createFilter(query),
     };
 
     const skip = (page - 1) * pageSize;
@@ -152,11 +167,13 @@ export class ProductService {
     const {
       page,
       pageSize,
-      search,
+      active,
     } = query;
 
-    const where: Prisma.ProductWhereInput =
-      this.createSearchFilter(search);
+    const where: Prisma.ProductWhereInput = {
+      ...this.createFilter(query),
+      ...(active === undefined ? {} : { active }),
+    };
 
     const skip = (page - 1) * pageSize;
 
@@ -272,6 +289,16 @@ export class ProductService {
         data.imageUrl.trim();
     }
 
+    if (data.category !== undefined) {
+      updateData.category =
+        data.category;
+    }
+
+    if (data.species !== undefined) {
+      updateData.species =
+        data.species;
+    }
+
     if (data.active !== undefined) {
       updateData.active =
         data.active;
@@ -309,19 +336,28 @@ export class ProductService {
     return this.formatProduct(product);
   }
 
-  async deactivate(
+  async remove(
     productId: string,
   ) {
-    const product =
-      await this.updateStatus(
-        productId,
-        false,
-      );
+    await this.findByIdForAdmin(productId);
+
+    await prisma.$transaction([
+      prisma.cartItem.deleteMany({
+        where: {
+          productId,
+        },
+      }),
+
+      prisma.product.delete({
+        where: {
+          id: productId,
+        },
+      }),
+    ]);
 
     return {
       message:
-        "Produto inativado com sucesso.",
-      product,
+        "Produto excluído com sucesso.",
     };
   }
 }

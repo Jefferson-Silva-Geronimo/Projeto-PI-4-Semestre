@@ -1,5 +1,26 @@
 import { z } from "zod";
 
+const categoryEnum = z.enum(
+  [
+    "RACAO",
+    "PETISCOS",
+    "HIGIENE",
+    "BRINQUEDOS",
+    "ACESSORIOS",
+    "FARMACIA",
+  ],
+  {
+    error: "Categoria inválida.",
+  },
+);
+
+const speciesEnum = z.enum(
+  ["CAO", "GATO", "OUTRO"],
+  {
+    error: "Espécie inválida.",
+  },
+);
+
 export const productIdParamsSchema = z
   .object({
     productId: z
@@ -52,6 +73,10 @@ export const createProductSchema = z
         2048,
         "A URL da imagem deve possuir no máximo 2048 caracteres.",
       ),
+
+    category: categoryEnum.default("ACESSORIOS"),
+
+    species: speciesEnum.nullable().optional(),
   })
   .strict();
 
@@ -105,6 +130,10 @@ export const updateProductSchema = z
       )
       .optional(),
 
+    category: categoryEnum.optional(),
+
+    species: speciesEnum.nullable().optional(),
+
     active: z
       .boolean({
         error: "O status deve ser verdadeiro ou falso.",
@@ -155,6 +184,15 @@ export const productListQuerySchema = z.object({
       120,
       "A pesquisa deve possuir no máximo 120 caracteres.",
     )
+    .optional(),
+
+  category: categoryEnum.optional(),
+
+  species: speciesEnum.optional(),
+
+  active: z
+    .enum(["true", "false"])
+    .transform((value) => value === "true")
     .optional(),
 });
 
