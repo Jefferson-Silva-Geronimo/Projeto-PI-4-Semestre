@@ -21,6 +21,12 @@ import type {
 } from '../types/product';
 
 import {
+  localDb,
+} from '../storage/localDb';
+
+import axios from 'axios';
+
+import {
   getApiErrorMessage,
 } from '../utils/error';
 
@@ -53,6 +59,9 @@ export function useClientProducts() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [offline, setOffline] =
+    useState(false);
 
   const loadedRef = useRef(false);
 
@@ -100,7 +109,32 @@ export function useClientProducts() {
         setPagination(
           result.pagination,
         );
+        setOffline(false);
+
+        if (!search && !category && !species) {
+          await localDb.set(
+            'catalog',
+            result.data,
+          );
+        }
       } catch (error: unknown) {
+        if (
+          axios.isAxiosError(error) &&
+          !error.response
+        ) {
+          const cached =
+            await localDb.get<Product[]>(
+              'catalog',
+            );
+
+          if (cached) {
+            setProducts(cached);
+            setOffline(true);
+
+            return;
+          }
+        }
+
         setErrorMessage(
           getApiErrorMessage(
             error,
@@ -142,6 +176,7 @@ export function useClientProducts() {
     loading,
     refreshing,
     errorMessage,
+    offline,
     search,
     category,
     species,

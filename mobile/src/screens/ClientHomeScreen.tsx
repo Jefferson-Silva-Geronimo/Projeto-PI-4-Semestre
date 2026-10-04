@@ -16,6 +16,7 @@ import type {
 } from '@react-navigation/native-stack';
 
 import ChipGroup from '../components/ChipGroup';
+import OfflineNotice from '../components/OfflineNotice';
 import { useAuth } from '../hooks/useAuth';
 import { useClientProducts } from '../hooks/useClientProducts';
 
@@ -51,6 +52,7 @@ export default function ClientHomeScreen({
     loading,
     refreshing,
     errorMessage,
+    offline,
     search,
     category,
     species,
@@ -229,6 +231,8 @@ export default function ClientHomeScreen({
           </Text>
         </TouchableOpacity>
       </View>
+
+      {offline ? <OfflineNotice /> : null}
 
       <View style={styles.filters}>
         <TextInput
