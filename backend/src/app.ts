@@ -6,11 +6,14 @@ import { env } from "./config/env";
 
 import { errorMiddleware } from "./middlewares/error.middleware";
 
+import { appointmentRoutes } from "./modules/appointments/appointment.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { cartRoutes } from "./modules/cart/cart.routes";
 import { orderRoutes } from "./modules/orders/order.routes";
 import { paymentRoutes } from "./modules/payments/payment.routes";
+import { petRoutes } from "./modules/pets/pet.routes";
 import { productRoutes } from "./modules/products/product.routes";
+import { serviceRoutes } from "./modules/services/service.routes";
 
 import { AppError } from "./shared/errors/AppError";
 
@@ -69,6 +72,9 @@ app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/orders", orderRoutes);
 app.use("/payments", paymentRoutes);
+app.use("/pets", petRoutes);
+app.use("/services", serviceRoutes);
+app.use("/appointments", appointmentRoutes);
 
 app.use((_req, _res, next) => {
   return next(

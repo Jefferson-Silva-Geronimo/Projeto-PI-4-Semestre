@@ -36,6 +36,19 @@ enum Species {
   OUTRO
 }
 
+enum PetSize {
+  P
+  M
+  G
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
 enum PaymentProvider {
   MERCADO_PAGO
 }
@@ -59,6 +72,8 @@ model User {
   resetTokens  PasswordResetToken[]
   cart         Cart?
   orders       Order[]
+  pets         Pet[]
+  appointments Appointment[]
 
   @@map("users")
 }
@@ -167,4 +182,62 @@ model OrderItem {
 
   @@index([orderId])
   @@map("order_items")
+}
+
+model Pet {
+  id           String        @id @default(uuid())
+  userId       String
+  name         String
+  species      Species
+  breed        String?
+  size         PetSize
+  birthDate    DateTime?
+  weightKg     Float?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([userId])
+  @@map("pets")
+}
+
+model Service {
+  id                 String        @id @default(uuid())
+  name               String
+  description        String
+  durationMinutes    Int
+  priceSmallInCents  Int
+  priceMediumInCents Int
+  priceLargeInCents  Int
+  active             Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  appointments       Appointment[]
+
+  @@index([active])
+  @@map("services")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  userId          String
+  petId           String
+  serviceId       String
+  scheduledAt     DateTime
+  durationMinutes Int
+  priceInCents    Int
+  status          AppointmentStatus @default(SCHEDULED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet             Pet               @relation(fields: [petId], references: [id], onDelete: Cascade)
+  service         Service           @relation(fields: [serviceId], references: [id])
+
+  @@index([userId, scheduledAt])
+  @@index([scheduledAt, status])
+  @@index([petId])
+  @@index([serviceId])
+  @@map("appointments")
 }
