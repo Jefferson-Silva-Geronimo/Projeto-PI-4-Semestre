@@ -1,0 +1,153 @@
+import { StyleSheet } from 'react-native';
+
+export const commonStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  backText: {
+    color: '#2D6CDF',
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 14,
+  },
+  title: {
+    color: '#1E293B',
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  subtitle: {
+    color: '#475569',
+    fontSize: 15,
+    marginTop: 4,
+  },
+  listContent: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    padding: 20,
+    paddingBottom: 40,
+    gap: 12,
+  },
+  formContent: {
+    width: '100%',
+    maxWidth: 520,
+    alignSelf: 'center',
+    padding: 20,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  card: {
+    padding: 16,
+    borderRadius: 14,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 6,
+  },
+  cardTitle: {
+    color: '#1E293B',
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  cardText: {
+    color: '#475569',
+    fontSize: 14,
+  },
+  cardPrice: {
+    color: '#2D6CDF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  label: {
+    color: '#1E293B',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  helper: {
+    color: '#475569',
+    fontSize: 13,
+    marginTop: 4,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 12,
+  },
+  emptyTitle: {
+    color: '#1E293B',
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  emptyText: {
+    color: '#475569',
+    fontSize: 15,
+    textAlign: 'center',
+  },
+  primaryButton: {
+    height: 48,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#2D6CDF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  outlineButton: {
+    height: 40,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#2D6CDF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  outlineButtonText: {
+    color: '#2D6CDF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  dangerButton: {
+    height: 40,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dangerButtonText: {
+    color: '#DC2626',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  row: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  disabled: {
+    opacity: 0.6,
+  },
+});

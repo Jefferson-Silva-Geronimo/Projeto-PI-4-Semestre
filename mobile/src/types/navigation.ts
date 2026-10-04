@@ -22,6 +22,20 @@ export type ClientStackParamList = {
   OrderDetails: {
     orderId: string;
   };
+
+  Pets: undefined;
+
+  PetForm: {
+    petId?: string;
+  } | undefined;
+
+  Services: undefined;
+
+  BookAppointment: {
+    serviceId: string;
+  };
+
+  Appointments: undefined;
 };
 
 export type AdminStackParamList = {
@@ -38,4 +52,12 @@ export type AdminStackParamList = {
   AdminOrderDetails: {
     orderId: string;
   };
+
+  AdminServices: undefined;
+
+  ServiceForm: {
+    serviceId?: string;
+  } | undefined;
+
+  AdminAgenda: undefined;
 };

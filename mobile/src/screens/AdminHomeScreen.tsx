@@ -88,6 +88,38 @@ export default function AdminHomeScreen({
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={styles.secondaryActionButton}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('AdminServices')}
+            accessibilityRole="button"
+            accessibilityLabel="Acessar o gerenciamento de serviços"
+          >
+            <Text style={styles.secondaryActionTitle}>
+              Gerenciar serviços
+            </Text>
+
+            <Text style={styles.secondaryActionDescription}>
+              Cadastre serviços e preços por porte.
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryActionButton}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('AdminAgenda')}
+            accessibilityRole="button"
+            accessibilityLabel="Acessar a agenda do dia"
+          >
+            <Text style={styles.secondaryActionTitle}>
+              Agenda do dia
+            </Text>
+
+            <Text style={styles.secondaryActionDescription}>
+              Confirme, conclua ou cancele atendimentos.
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.logoutButton}
             activeOpacity={0.7}
             onPress={() => {
