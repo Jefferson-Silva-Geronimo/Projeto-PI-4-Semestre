@@ -42,6 +42,7 @@ const appointmentInclude = {
       id: true,
       name: true,
       email: true,
+      phone: true,
     },
   },
 } satisfies Prisma.AppointmentInclude;

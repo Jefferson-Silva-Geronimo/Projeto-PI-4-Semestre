@@ -8,6 +8,7 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import PasswordInput from '../components/PasswordInput';
 import { useRegister } from '../hooks/useRegister';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -23,6 +24,7 @@ export default function RegisterScreen({
   const {
     name,
     email,
+    phone,
     password,
     passwordConfirmation,
     loading,
@@ -30,6 +32,7 @@ export default function RegisterScreen({
     successMessage,
     setName,
     setEmail,
+    setPhone,
     setPassword,
     setPasswordConfirmation,
     handleRegister,
@@ -93,17 +96,30 @@ export default function RegisterScreen({
               styles.input,
               errorMessage && styles.inputError,
             ]}
-            placeholder="Digite sua senha"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
+            placeholder="Telefone com DDD"
+            placeholderTextColor="#64748B"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            autoComplete="tel"
+            maxLength={15}
             editable={!loading}
             returnKeyType="next"
           />
 
-          <TextInput
+          <PasswordInput
+            style={[
+              styles.input,
+              errorMessage && styles.inputError,
+            ]}
+            placeholder="Digite sua senha"
+            value={password}
+            onChangeText={setPassword}
+            editable={!loading}
+            returnKeyType="next"
+          />
+
+          <PasswordInput
             style={[
               styles.input,
               errorMessage && styles.inputError,
@@ -111,9 +127,6 @@ export default function RegisterScreen({
             placeholder="Confirme sua senha"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             editable={!loading}
             returnKeyType="done"
             onSubmitEditing={onRegisterPress}

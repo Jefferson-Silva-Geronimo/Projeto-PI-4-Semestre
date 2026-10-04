@@ -71,6 +71,18 @@ export class AuthController {
 
     return res.status(200).json(user);
   }
+
+  async updateProfile(
+    req: Request,
+    res: Response,
+  ) {
+    const user = await authService.updateProfile(
+      req.user!.userId,
+      req.body,
+    );
+
+    return res.status(200).json(user);
+  }
 }
 
 export const authController =

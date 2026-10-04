@@ -15,7 +15,15 @@ export interface LoginDTO {
 export interface RegisterDTO {
   name: string;
   email: string;
+  phone: string;
   password: string;
+}
+
+export interface UpdateProfileDTO {
+  name?: string;
+  phone?: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 export interface ResetPasswordDTO {
@@ -68,6 +76,18 @@ export const authService = {
     const response =
       await api.post<MessageResponse>(
         '/auth/reset-password',
+        data,
+      );
+
+    return response.data;
+  },
+
+  async updateProfile(
+    data: UpdateProfileDTO,
+  ): Promise<AuthUser> {
+    const response =
+      await api.patch<AuthUser>(
+        '/auth/me',
         data,
       );
 

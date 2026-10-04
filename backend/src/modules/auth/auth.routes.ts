@@ -10,6 +10,7 @@ import {
   loginSchema,
   registerSchema,
   resetPasswordSchema,
+  updateProfileSchema,
 } from "./auth.schemas";
 
 const authRoutes = Router();
@@ -78,6 +79,13 @@ authRoutes.get(
   "/me",
   authMiddleware,
   authController.me.bind(authController),
+);
+
+authRoutes.patch(
+  "/me",
+  authMiddleware,
+  validate(updateProfileSchema),
+  authController.updateProfile.bind(authController),
 );
 
 export { authRoutes };

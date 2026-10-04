@@ -36,6 +36,8 @@ export type ClientStackParamList = {
   };
 
   Appointments: undefined;
+  Profile: undefined;
+  EditProfile: undefined;
 };
 
 export type AdminStackParamList = {
