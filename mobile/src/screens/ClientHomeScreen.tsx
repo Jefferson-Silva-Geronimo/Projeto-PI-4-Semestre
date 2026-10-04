@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -14,6 +15,7 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import ChipGroup from '../components/ChipGroup';
 import { useAuth } from '../hooks/useAuth';
 import { useClientProducts } from '../hooks/useClientProducts';
 
@@ -21,8 +23,10 @@ import type {
   ClientStackParamList,
 } from '../types/navigation';
 
-import type {
-  Product,
+import {
+  categoryOptions,
+  type Product,
+  type Species,
 } from '../types/product';
 
 import {
@@ -47,6 +51,12 @@ export default function ClientHomeScreen({
     loading,
     refreshing,
     errorMessage,
+    search,
+    category,
+    species,
+    setSearch,
+    setCategory,
+    setSpecies,
     loadProducts,
     refreshProducts,
   } = useClientProducts();
@@ -140,7 +150,13 @@ export default function ClientHomeScreen({
     );
   }
 
-  if (errorMessage) {
+  if (
+    errorMessage &&
+    products.length === 0 &&
+    !search &&
+    !category &&
+    !species
+  ) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
@@ -214,38 +230,31 @@ export default function ClientHomeScreen({
         </TouchableOpacity>
       </View>
 
-      <View style={styles.quickActions}>
-        <TouchableOpacity
-          style={styles.quickActionButton}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Cart')}
-          accessibilityRole="button"
-          accessibilityLabel="Abrir carrinho"
-        >
-          <Text style={styles.quickActionTitle}>
-            Carrinho
-          </Text>
+      <View style={styles.filters}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar produto"
+          placeholderTextColor="#64748B"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          returnKeyType="search"
+        />
 
-          <Text style={styles.quickActionDescription}>
-            Revise os itens selecionados
-          </Text>
-        </TouchableOpacity>
+        <ChipGroup
+          options={categoryOptions}
+          selected={category}
+          onSelect={setCategory}
+          allowClear
+        />
 
-        <TouchableOpacity
-          style={styles.quickActionButton}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Orders')}
-          accessibilityRole="button"
-          accessibilityLabel="Abrir meus pedidos"
-        >
-          <Text style={styles.quickActionTitle}>
-            Meus pedidos
-          </Text>
-
-          <Text style={styles.quickActionDescription}>
-            Consulte seu histórico
-          </Text>
-        </TouchableOpacity>
+        <ChipGroup
+          options={speciesFilterOptions}
+          selected={species}
+          onSelect={setSpecies}
+          allowClear
+          allLabel="Cão e gato"
+        />
       </View>
 
       <FlatList
@@ -275,11 +284,11 @@ export default function ClientHomeScreen({
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>
-              Nenhum produto disponível
+              Nenhum produto encontrado
             </Text>
 
             <Text style={styles.emptyText}>
-              O catálogo ainda não possui produtos disponíveis.
+              Ajuste a busca ou os filtros para ver outros produtos.
             </Text>
           </View>
         }
@@ -288,7 +297,30 @@ export default function ClientHomeScreen({
   );
 }
 
+const speciesFilterOptions: Array<{
+  value: Species;
+  label: string;
+}> = [
+  { value: 'CAO', label: 'Cão' },
+  { value: 'GATO', label: 'Gato' },
+];
+
 const styles = StyleSheet.create({
+  filters: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    gap: 10,
+  },
+  searchInput: {
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: '#1E293B',
+    backgroundColor: '#FFFFFF',
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',

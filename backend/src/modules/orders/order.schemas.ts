@@ -36,6 +36,21 @@ export const orderListQuerySchema = z
         "O tamanho máximo da página é 100.",
       )
       .default(20),
+
+    status: z
+      .enum(
+        [
+          "PENDING_PAYMENT",
+          "CONFIRMED",
+          "PROCESSING",
+          "COMPLETED",
+          "CANCELLED",
+        ],
+        {
+          error: "O status informado é inválido.",
+        },
+      )
+      .optional(),
   })
   .strict();
 

@@ -190,6 +190,12 @@ export const productListQuerySchema = z.object({
 
   species: speciesEnum.optional(),
 
+  maxStock: z.coerce
+    .number()
+    .int("O estoque deve ser um número inteiro.")
+    .min(0, "O estoque não pode ser negativo.")
+    .optional(),
+
   active: z
     .enum(["true", "false"])
     .transform((value) => value === "true")

@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
@@ -15,6 +16,8 @@ import type {
 
 import type {
   Product,
+  ProductCategory,
+  Species,
 } from '../types/product';
 
 import {
@@ -37,8 +40,21 @@ export function useClientProducts() {
       initialPagination,
     );
 
+  const [search, setSearch] =
+    useState('');
+
+  const [category, setCategory] =
+    useState<ProductCategory | null>(
+      null,
+    );
+
+  const [species, setSpecies] =
+    useState<Species | null>(null);
+
   const [loading, setLoading] =
     useState(true);
+
+  const loadedRef = useRef(false);
 
   const [
     refreshing,
@@ -54,11 +70,11 @@ export function useClientProducts() {
     async (
       options?: {
         refreshing?: boolean;
-        search?: string;
       },
     ): Promise<void> => {
       const isRefreshing =
-        options?.refreshing === true;
+        options?.refreshing === true ||
+        loadedRef.current;
 
       try {
         if (isRefreshing) {
@@ -73,7 +89,11 @@ export function useClientProducts() {
           await productService.listActive({
             page: 1,
             pageSize: 20,
-            search: options?.search,
+            search,
+            category:
+              category ?? undefined,
+            species:
+              species ?? undefined,
           });
 
         setProducts(result.data);
@@ -88,11 +108,12 @@ export function useClientProducts() {
           ),
         );
       } finally {
+        loadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [search, category, species],
   );
 
   const refreshProducts =
@@ -107,7 +128,11 @@ export function useClientProducts() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadProducts();
+      const timer = setTimeout(() => {
+        void loadProducts();
+      }, 300);
+
+      return () => clearTimeout(timer);
     }, [loadProducts]),
   );
 
@@ -117,6 +142,12 @@ export function useClientProducts() {
     loading,
     refreshing,
     errorMessage,
+    search,
+    category,
+    species,
+    setSearch,
+    setCategory,
+    setSpecies,
     loadProducts,
     refreshProducts,
   };

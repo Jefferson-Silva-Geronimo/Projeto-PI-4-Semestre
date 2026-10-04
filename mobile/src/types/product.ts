@@ -103,6 +103,7 @@ export interface ProductListParams {
   search?: string;
   category?: ProductCategory;
   species?: Species;
+  maxStock?: number;
   active?: boolean;
 }
 

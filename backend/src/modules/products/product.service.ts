@@ -54,7 +54,7 @@ export class ProductService {
   private createFilter(
     query: ProductListQuery,
   ): Prisma.ProductWhereInput {
-    const { search, category, species } = query;
+    const { search, category, species, maxStock } = query;
 
     const conditions: Prisma.ProductWhereInput[] = [];
 
@@ -84,6 +84,12 @@ export class ProductService {
     if (species) {
       conditions.push({
         OR: [{ species }, { species: null }],
+      });
+    }
+
+    if (maxStock !== undefined) {
+      conditions.push({
+        stock: { lte: maxStock },
       });
     }
 

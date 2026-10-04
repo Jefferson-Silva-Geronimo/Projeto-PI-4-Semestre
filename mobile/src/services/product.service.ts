@@ -28,6 +28,7 @@ export const productService = {
 
             category: params.category,
             species: params.species,
+            maxStock: params.maxStock,
             active: params.active,
           },
         },
@@ -54,6 +55,7 @@ export const productService = {
 
             category: params.category,
             species: params.species,
+            maxStock: params.maxStock,
             active: params.active,
           },
         },

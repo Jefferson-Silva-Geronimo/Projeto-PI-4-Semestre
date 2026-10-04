@@ -1,5 +1,6 @@
 import {
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,6 +11,7 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import { useAuth } from '../hooks/useAuth';
 
 import type {
@@ -29,13 +31,30 @@ export default function AdminHomeScreen({
     signOut,
   } = useAuth();
 
+  const indicators = useAdminDashboard();
+
+  const cards = [
+    {
+      label: 'Pedidos aguardando',
+      value: indicators?.pendingOrders,
+    },
+    {
+      label: 'Agendamentos de hoje',
+      value: indicators?.todayAppointments,
+    },
+    {
+      label: 'Estoque baixo',
+      value: indicators?.lowStockProducts,
+    },
+  ];
+
   async function handleLogout(): Promise<void> {
     await signOut();
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.logo}>
           PETSHOP
         </Text>
@@ -48,14 +67,21 @@ export default function AdminHomeScreen({
           Bem-vindo, {user?.name}.
         </Text>
 
-        <View style={styles.profileCard}>
-          <Text style={styles.profileLabel}>
-            Perfil autenticado
-          </Text>
+        <View style={styles.indicators}>
+          {cards.map((card) => (
+            <View
+              key={card.label}
+              style={styles.indicatorCard}
+            >
+              <Text style={styles.indicatorValue}>
+                {card.value ?? '-'}
+              </Text>
 
-          <Text style={styles.profileValue}>
-            {user?.role}
-          </Text>
+              <Text style={styles.indicatorLabel}>
+                {card.label}
+              </Text>
+            </View>
+          ))}
         </View>
 
         <View style={styles.actions}>
@@ -133,7 +159,7 @@ export default function AdminHomeScreen({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -144,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     width: '100%',
     maxWidth: 520,
     alignSelf: 'center',
@@ -172,22 +198,29 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
-  profileCard: {
-    padding: 16,
+  indicators: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 26,
+  },
+  indicatorCard: {
+    flex: 1,
+    padding: 12,
     borderRadius: 14,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginTop: 26,
+    alignItems: 'center',
   },
-  profileLabel: {
-    color: '#64748B',
-    fontSize: 13,
-  },
-  profileValue: {
-    color: '#1E293B',
-    fontSize: 16,
+  indicatorValue: {
+    color: '#2D6CDF',
+    fontSize: 24,
     fontWeight: '700',
+  },
+  indicatorLabel: {
+    color: '#475569',
+    fontSize: 12,
+    textAlign: 'center',
     marginTop: 4,
   },
   actions: {
