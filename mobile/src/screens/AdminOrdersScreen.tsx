@@ -13,15 +13,17 @@ import type {
     NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import ChipGroup from '../components/ChipGroup';
 import { useAdminOrders } from '../hooks/useAdminOrders';
 
 import type {
     AdminStackParamList,
 } from '../types/navigation';
 
-import type {
-    Order,
-    OrderStatus,
+import {
+    orderStatusOptions,
+    type Order,
+    type OrderStatus,
 } from '../types/order';
 
 import { formatCurrency } from '../utils/currency';
@@ -47,6 +49,8 @@ export default function AdminOrdersScreen({
         loading,
         refreshing,
         errorMessage,
+        statusFilter,
+        setStatusFilter,
         loadOrders,
         refreshOrders,
     } = useAdminOrders();
@@ -160,6 +164,15 @@ export default function AdminOrdersScreen({
 
                 <Text style={styles.headerTitle}>Pedidos</Text>
                 <View style={styles.headerSpacer} />
+            </View>
+
+            <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
+                <ChipGroup
+                    options={orderStatusOptions}
+                    selected={statusFilter}
+                    onSelect={setStatusFilter}
+                    allowClear
+                />
             </View>
 
             <FlatList

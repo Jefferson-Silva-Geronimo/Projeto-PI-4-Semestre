@@ -19,6 +19,12 @@ import {
   authStorage,
 } from '../storage/authStorage';
 
+import {
+  localDb,
+} from '../storage/localDb';
+
+import axios from 'axios';
+
 import type {
   AuthUser,
   LoginCredentials,
@@ -70,6 +76,10 @@ export function AuthProvider({
         try {
           await authStorage
             .removeToken();
+
+          await localDb.remove(
+            'session-user',
+          );
         } finally {
           setUser(null);
         }
@@ -125,8 +135,25 @@ export function AuthProvider({
           setUser(
             authenticatedUser,
           );
-        } catch {
-          await clearSession();
+
+          await localDb.set(
+            'session-user',
+            authenticatedUser,
+          );
+        } catch (error: unknown) {
+          const cachedUser =
+            axios.isAxiosError(error) &&
+            !error.response
+              ? await localDb.get<AuthUser>(
+                  'session-user',
+                )
+              : null;
+
+          if (cachedUser) {
+            setUser(cachedUser);
+          } else {
+            await clearSession();
+          }
         } finally {
           setIsLoadingSession(
             false,
@@ -176,6 +203,11 @@ export function AuthProvider({
             );
 
           setUser(result.user);
+
+          await localDb.set(
+            'session-user',
+            result.user,
+          );
 
           return result;
         } catch {

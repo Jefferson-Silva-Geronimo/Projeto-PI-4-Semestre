@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -14,7 +15,11 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
-import { useAdminProducts } from '../hooks/useAdminProducts';
+import ChipGroup from '../components/ChipGroup';
+import {
+  useAdminProducts,
+  type ProductStatusFilter,
+} from '../hooks/useAdminProducts';
 import { useProductStatus } from '../hooks/useProductStatus';
 import { confirmAction } from '../utils/confirm';
 
@@ -43,6 +48,10 @@ export default function AdminProductsScreen({
     loading,
     refreshing,
     errorMessage,
+    search,
+    statusFilter,
+    setSearch,
+    setStatusFilter,
     loadProducts,
     refreshProducts,
   } = useAdminProducts();
@@ -51,7 +60,33 @@ export default function AdminProductsScreen({
     processingProductId,
     errorMessage: statusErrorMessage,
     changeStatus,
+    removeProduct,
   } = useProductStatus();
+
+  async function handleDelete(
+    product: Product,
+  ): Promise<void> {
+    const confirmed = await confirmAction({
+      title: 'Excluir produto',
+      message: `Deseja excluir ${product.name} definitivamente? O produto será removido dos carrinhos e os pedidos já feitos não serão afetados.`,
+      confirmText: 'Excluir',
+      destructive: true,
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    const removed = await removeProduct(
+      product.id,
+    );
+
+    if (removed) {
+      await loadProducts({
+        refreshing: true,
+      });
+    }
+  }
 
   async function handleChangeStatus(
     product: Product,
@@ -181,6 +216,21 @@ export default function AdminProductsScreen({
                     : 'Reativar'}
               </Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.deleteButton}
+              activeOpacity={0.8}
+              disabled={processing}
+              onPress={() => {
+                void handleDelete(item);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`Excluir ${item.name}`}
+            >
+              <Text style={styles.deleteButtonText}>
+                Excluir
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -204,7 +254,12 @@ export default function AdminProductsScreen({
     );
   }
 
-  if (errorMessage && products.length === 0) {
+  if (
+    errorMessage &&
+    products.length === 0 &&
+    !search &&
+    statusFilter === 'ALL'
+  ) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
@@ -274,6 +329,24 @@ export default function AdminProductsScreen({
             Novo
           </Text>
         </TouchableOpacity>
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Buscar produto"
+          placeholderTextColor="#64748B"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+          returnKeyType="search"
+        />
+
+        <ChipGroup<ProductStatusFilter>
+          options={statusOptions}
+          selected={statusFilter}
+          onSelect={(value) =>
+            setStatusFilter(value ?? 'ALL')
+          }
+        />
       </View>
 
       <FlatList
@@ -326,6 +399,15 @@ export default function AdminProductsScreen({
   );
 }
 
+const statusOptions: Array<{
+  value: ProductStatusFilter;
+  label: string;
+}> = [
+  { value: 'ALL', label: 'Todos' },
+  { value: 'ACTIVE', label: 'Ativos' },
+  { value: 'INACTIVE', label: 'Inativos' },
+];
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -370,6 +452,32 @@ const styles = StyleSheet.create({
   createButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
+    fontWeight: '700',
+  },
+  searchInput: {
+    height: 46,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    fontSize: 15,
+    color: '#1E293B',
+    backgroundColor: '#FFFFFF',
+    marginTop: 14,
+    marginBottom: 12,
+  },
+  deleteButton: {
+    height: 40,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: '#DC2626',
+    fontSize: 14,
     fontWeight: '700',
   },
   listContent: {
@@ -436,6 +544,8 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginTop: 14,
   },
   editButton: {

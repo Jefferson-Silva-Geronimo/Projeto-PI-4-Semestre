@@ -8,6 +8,7 @@ import {
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import PasswordInput from '../components/PasswordInput';
 import { useLogin } from '../hooks/useLogin';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -69,7 +70,7 @@ export default function LoginScreen({
             returnKeyType="next"
           />
 
-          <TextInput
+          <PasswordInput
             style={[
               styles.input,
               errorMessage
@@ -77,10 +78,6 @@ export default function LoginScreen({
                 : undefined,
             ]}
             placeholder="Digite sua senha"
-            placeholderTextColor="#64748B"
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             value={password}
             onChangeText={setPassword}
             editable={!loading}

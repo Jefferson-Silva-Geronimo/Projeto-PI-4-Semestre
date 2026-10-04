@@ -10,11 +10,18 @@ import {
   getApiErrorMessage,
 } from '../utils/error';
 
+import {
+  isValidPhone,
+} from '../utils/validacoes';
+
 export function useRegister() {
   const [name, setName] =
     useState('');
 
   const [email, setEmail] =
+    useState('');
+
+  const [phone, setPhone] =
     useState('');
 
   const [password, setPassword] =
@@ -64,6 +71,10 @@ export function useRegister() {
       )
     ) {
       return 'Digite um e-mail válido.';
+    }
+
+    if (!isValidPhone(phone)) {
+      return 'Informe um telefone com DDD.';
     }
 
     if (password.length < 8) {
@@ -122,6 +133,8 @@ export function useRegister() {
           .trim()
           .toLowerCase(),
 
+        phone: phone.replace(/\D/g, ''),
+
         password,
       });
 
@@ -147,6 +160,7 @@ export function useRegister() {
   return {
     name,
     email,
+    phone,
     password,
     passwordConfirmation,
     loading,
@@ -154,6 +168,7 @@ export function useRegister() {
     successMessage,
     setName,
     setEmail,
+    setPhone,
     setPassword,
     setPasswordConfirmation,
     handleRegister,

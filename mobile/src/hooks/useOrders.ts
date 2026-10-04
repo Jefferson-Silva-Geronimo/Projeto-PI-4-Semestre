@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
@@ -17,6 +18,7 @@ import type {
 
 import type {
   Order,
+  OrderStatus,
 } from '../types/order';
 
 import {
@@ -41,8 +43,17 @@ export function useOrders() {
     initialPagination,
   );
 
+  const [
+    statusFilter,
+    setStatusFilter,
+  ] = useState<OrderStatus | null>(
+    null,
+  );
+
   const [loading, setLoading] =
     useState(true);
+
+  const loadedRef = useRef(false);
 
   const [
     refreshing,
@@ -61,7 +72,8 @@ export function useOrders() {
       },
     ): Promise<void> => {
       const isRefreshing =
-        options?.refreshing === true;
+        options?.refreshing === true ||
+        loadedRef.current;
 
       try {
         if (isRefreshing) {
@@ -76,6 +88,8 @@ export function useOrders() {
           await orderService.list({
             page: 1,
             pageSize: 20,
+            status:
+              statusFilter ?? undefined,
           });
 
         setOrders(result.data);
@@ -90,11 +104,12 @@ export function useOrders() {
           ),
         );
       } finally {
+        loadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [statusFilter],
   );
 
   const refreshOrders =
@@ -119,6 +134,8 @@ export function useOrders() {
     loading,
     refreshing,
     errorMessage,
+    statusFilter,
+    setStatusFilter,
     loadOrders,
     refreshOrders,
   };

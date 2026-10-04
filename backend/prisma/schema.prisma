@@ -21,6 +21,34 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ProductCategory {
+  RACAO
+  PETISCOS
+  HIGIENE
+  BRINQUEDOS
+  ACESSORIOS
+  FARMACIA
+}
+
+enum Species {
+  CAO
+  GATO
+  OUTRO
+}
+
+enum PetSize {
+  P
+  M
+  G
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
 enum PaymentProvider {
   MERCADO_PAGO
 }
@@ -37,6 +65,7 @@ model User {
   id           String               @id @default(uuid())
   name         String
   email        String               @unique
+  phone        String?
   passwordHash String
   role         UserRole             @default(CLIENTE)
   createdAt    DateTime             @default(now())
@@ -44,6 +73,8 @@ model User {
   resetTokens  PasswordResetToken[]
   cart         Cart?
   orders       Order[]
+  pets         Pet[]
+  appointments Appointment[]
 
   @@map("users")
 }
@@ -61,15 +92,17 @@ model PasswordResetToken {
 }
 
 model Product {
-  id           String     @id @default(uuid())
+  id           String          @id @default(uuid())
   name         String
   description  String
   priceInCents Int
   stock        Int
   imageUrl     String
-  active       Boolean    @default(true)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  category     ProductCategory @default(ACESSORIOS)
+  species      Species?
+  active       Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   cartItems    CartItem[]
 
   @@index([active, createdAt])
@@ -150,4 +183,62 @@ model OrderItem {
 
   @@index([orderId])
   @@map("order_items")
+}
+
+model Pet {
+  id           String        @id @default(uuid())
+  userId       String
+  name         String
+  species      Species
+  breed        String?
+  size         PetSize
+  birthDate    DateTime?
+  weightKg     Float?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([userId])
+  @@map("pets")
+}
+
+model Service {
+  id                 String        @id @default(uuid())
+  name               String
+  description        String
+  durationMinutes    Int
+  priceSmallInCents  Int
+  priceMediumInCents Int
+  priceLargeInCents  Int
+  active             Boolean       @default(true)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  appointments       Appointment[]
+
+  @@index([active])
+  @@map("services")
+}
+
+model Appointment {
+  id              String            @id @default(uuid())
+  userId          String
+  petId           String
+  serviceId       String
+  scheduledAt     DateTime
+  durationMinutes Int
+  priceInCents    Int
+  status          AppointmentStatus @default(SCHEDULED)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pet             Pet               @relation(fields: [petId], references: [id], onDelete: Cascade)
+  service         Service           @relation(fields: [serviceId], references: [id])
+
+  @@index([userId, scheduledAt])
+  @@index([scheduledAt, status])
+  @@index([petId])
+  @@index([serviceId])
+  @@map("appointments")
 }

@@ -8,6 +8,11 @@ import {
   productService,
 } from '../services/product.service';
 
+import type {
+  ProductCategory,
+  Species,
+} from '../types/product';
+
 import {
   formatCentsForInput,
   parseCurrencyInputToCents,
@@ -40,6 +45,16 @@ export function useEditProduct({
 
   const [imageUrl, setImageUrl] =
     useState('');
+
+  const [category, setCategory] =
+    useState<ProductCategory>(
+      'RACAO',
+    );
+
+  const [species, setSpecies] =
+    useState<Species | null>(
+      null,
+    );
 
   const [active, setActive] =
     useState(true);
@@ -90,6 +105,14 @@ export function useEditProduct({
 
         setImageUrl(
           product.imageUrl,
+        );
+
+        setCategory(
+          product.category,
+        );
+
+        setSpecies(
+          product.species,
         );
 
         setActive(
@@ -236,6 +259,8 @@ export function useEditProduct({
               imageUrl:
                 imageUrl.trim(),
 
+              category,
+              species,
               active,
             },
           );
@@ -260,6 +285,8 @@ export function useEditProduct({
       },
       [
         active,
+        category,
+        species,
         description,
         imageUrl,
         name,
@@ -279,6 +306,8 @@ export function useEditProduct({
     price,
     stock,
     imageUrl,
+    category,
+    species,
     active,
     loading,
     saving,
@@ -290,6 +319,8 @@ export function useEditProduct({
     setStock,
     setImageUrl,
     setActive,
+    setCategory,
+    setSpecies,
     loadProduct,
     saveProduct,
   };

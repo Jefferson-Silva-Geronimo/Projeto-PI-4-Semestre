@@ -260,6 +260,7 @@ export class OrderService {
     const {
       page,
       pageSize,
+      status,
     } = query;
 
     const skip =
@@ -268,6 +269,7 @@ export class OrderService {
     const where:
       Prisma.OrderWhereInput = {
         userId,
+        ...(status ? { status } : {}),
       };
 
     const [orders, totalItems] =
@@ -310,14 +312,20 @@ export class OrderService {
     const {
       page,
       pageSize,
+      status,
     } = query;
 
     const skip =
       (page - 1) * pageSize;
 
+    const where:
+      Prisma.OrderWhereInput =
+        status ? { status } : {};
+
     const [orders, totalItems] =
       await prisma.$transaction([
         prisma.order.findMany({
+          where,
           include: orderInclude,
 
           orderBy: {
@@ -328,7 +336,9 @@ export class OrderService {
           take: pageSize,
         }),
 
-        prisma.order.count(),
+        prisma.order.count({
+          where,
+        }),
       ]);
 
     return {

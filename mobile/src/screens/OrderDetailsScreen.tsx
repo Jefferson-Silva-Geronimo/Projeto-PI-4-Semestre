@@ -14,6 +14,7 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import OrderTimeline from '../components/OrderTimeline';
 import { useOrderDetails } from '../hooks/useOrderDetails';
 
 import type {
@@ -167,6 +168,8 @@ export default function OrderDetailsScreen({
             {statusLabels[order.status]}
           </Text>
         </View>
+
+        <OrderTimeline status={order.status} />
 
         <Text style={styles.sectionTitle}>
           Produtos

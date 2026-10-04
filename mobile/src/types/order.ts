@@ -40,7 +40,26 @@ export interface Order {
 export interface OrderListParams {
   page?: number;
   pageSize?: number;
+  status?: OrderStatus;
 }
+
+export const orderStatusLabels: Record<
+  OrderStatus,
+  string
+> = {
+  PENDING_PAYMENT: 'Aguardando pagamento',
+  CONFIRMED: 'Confirmado',
+  PROCESSING: 'Em processamento',
+  COMPLETED: 'Concluído',
+  CANCELLED: 'Cancelado',
+};
+
+export const orderStatusOptions = (
+  Object.keys(orderStatusLabels) as OrderStatus[]
+).map((value) => ({
+  value,
+  label: orderStatusLabels[value],
+}));
 
 export type OrderListResponse =
   PaginatedResponse<Order>;

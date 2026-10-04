@@ -11,6 +11,7 @@ import {
   LoginInput,
   RegisterInput,
   ResetPasswordInput,
+  UpdateProfileInput,
 } from "./auth.schemas";
 
 export class AuthService {
@@ -53,6 +54,7 @@ export class AuthService {
       data: {
         name,
         email,
+        phone: data.phone,
         passwordHash,
       },
     });
@@ -61,6 +63,7 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       createdAt: user.createdAt,
     };
@@ -117,6 +120,7 @@ export class AuthService {
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
       },
     };
@@ -261,10 +265,65 @@ export class AuthService {
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+  }
+
+  async updateProfile(
+    userId: string,
+    data: UpdateProfileInput,
+  ) {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new AppError(
+        "Usuário não encontrado.",
+        404,
+        "USER_NOT_FOUND",
+      );
+    }
+
+    let passwordHash: string | undefined;
+
+    if (data.newPassword !== undefined) {
+      const passwordIsValid = await bcrypt.compare(
+        data.currentPassword as string,
+        user.passwordHash,
+      );
+
+      if (!passwordIsValid) {
+        throw new AppError(
+          "A senha atual está incorreta.",
+          400,
+          "INVALID_CURRENT_PASSWORD",
+        );
+      }
+
+      passwordHash = await bcrypt.hash(
+        data.newPassword,
+        12,
+      );
+    }
+
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        name: data.name,
+        phone: data.phone,
+        passwordHash,
+      },
+    });
+
+    return this.me(userId);
   }
 }
 

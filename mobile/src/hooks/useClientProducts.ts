@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useRef,
   useState,
 } from 'react';
 
@@ -15,7 +16,15 @@ import type {
 
 import type {
   Product,
+  ProductCategory,
+  Species,
 } from '../types/product';
+
+import {
+  localDb,
+} from '../storage/localDb';
+
+import axios from 'axios';
 
 import {
   getApiErrorMessage,
@@ -37,8 +46,24 @@ export function useClientProducts() {
       initialPagination,
     );
 
+  const [search, setSearch] =
+    useState('');
+
+  const [category, setCategory] =
+    useState<ProductCategory | null>(
+      null,
+    );
+
+  const [species, setSpecies] =
+    useState<Species | null>(null);
+
   const [loading, setLoading] =
     useState(true);
+
+  const [offline, setOffline] =
+    useState(false);
+
+  const loadedRef = useRef(false);
 
   const [
     refreshing,
@@ -54,11 +79,11 @@ export function useClientProducts() {
     async (
       options?: {
         refreshing?: boolean;
-        search?: string;
       },
     ): Promise<void> => {
       const isRefreshing =
-        options?.refreshing === true;
+        options?.refreshing === true ||
+        loadedRef.current;
 
       try {
         if (isRefreshing) {
@@ -73,14 +98,43 @@ export function useClientProducts() {
           await productService.listActive({
             page: 1,
             pageSize: 20,
-            search: options?.search,
+            search,
+            category:
+              category ?? undefined,
+            species:
+              species ?? undefined,
           });
 
         setProducts(result.data);
         setPagination(
           result.pagination,
         );
+        setOffline(false);
+
+        if (!search && !category && !species) {
+          await localDb.set(
+            'catalog',
+            result.data,
+          );
+        }
       } catch (error: unknown) {
+        if (
+          axios.isAxiosError(error) &&
+          !error.response
+        ) {
+          const cached =
+            await localDb.get<Product[]>(
+              'catalog',
+            );
+
+          if (cached) {
+            setProducts(cached);
+            setOffline(true);
+
+            return;
+          }
+        }
+
         setErrorMessage(
           getApiErrorMessage(
             error,
@@ -88,11 +142,12 @@ export function useClientProducts() {
           ),
         );
       } finally {
+        loadedRef.current = true;
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [],
+    [search, category, species],
   );
 
   const refreshProducts =
@@ -107,7 +162,11 @@ export function useClientProducts() {
 
   useFocusEffect(
     useCallback(() => {
-      void loadProducts();
+      const timer = setTimeout(() => {
+        void loadProducts();
+      }, 300);
+
+      return () => clearTimeout(timer);
     }, [loadProducts]),
   );
 
@@ -117,6 +176,13 @@ export function useClientProducts() {
     loading,
     refreshing,
     errorMessage,
+    offline,
+    search,
+    category,
+    species,
+    setSearch,
+    setCategory,
+    setSpecies,
     loadProducts,
     refreshProducts,
   };

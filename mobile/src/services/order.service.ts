@@ -29,6 +29,8 @@ export const orderService = {
             page: params.page ?? 1,
             pageSize:
               params.pageSize ?? 20,
+
+            status: params.status,
           },
         },
       );
@@ -58,6 +60,8 @@ export const orderService = {
             page: params.page ?? 1,
             pageSize:
               params.pageSize ?? 20,
+
+            status: params.status,
           },
         },
       );

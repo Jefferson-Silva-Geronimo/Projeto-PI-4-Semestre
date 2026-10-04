@@ -13,15 +13,17 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import ChipGroup from '../components/ChipGroup';
 import { useOrders } from '../hooks/useOrders';
 
 import type {
   ClientStackParamList,
 } from '../types/navigation';
 
-import type {
-  Order,
-  OrderStatus,
+import {
+  orderStatusOptions,
+  type Order,
+  type OrderStatus,
 } from '../types/order';
 
 import {
@@ -49,6 +51,8 @@ export default function OrdersScreen({
     loading,
     refreshing,
     errorMessage,
+    statusFilter,
+    setStatusFilter,
     loadOrders,
     refreshOrders,
   } = useOrders();
@@ -178,6 +182,15 @@ export default function OrdersScreen({
         </Text>
 
         <View style={styles.headerSpacer} />
+      </View>
+
+      <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
+        <ChipGroup
+          options={orderStatusOptions}
+          selected={statusFilter}
+          onSelect={setStatusFilter}
+          allowClear
+        />
       </View>
 
       <FlatList

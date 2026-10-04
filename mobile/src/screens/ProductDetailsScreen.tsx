@@ -22,6 +22,11 @@ import type {
 } from '../types/navigation';
 
 import {
+  getCategoryLabel,
+  getSpeciesLabel,
+} from '../types/product';
+
+import {
   formatCurrency,
 } from '../utils/currency';
 
@@ -186,6 +191,11 @@ export default function ProductDetailsScreen({
             {product.name}
           </Text>
 
+          <Text style={styles.meta}>
+            {getCategoryLabel(product.category)} ·{' '}
+            {getSpeciesLabel(product.species)}
+          </Text>
+
           <Text style={styles.price}>
             {formatCurrency(product.priceInCents)}
           </Text>
@@ -335,6 +345,11 @@ export default function ProductDetailsScreen({
 }
 
 const styles = StyleSheet.create({
+  meta: {
+    color: '#475569',
+    fontSize: 14,
+    marginTop: 4,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',

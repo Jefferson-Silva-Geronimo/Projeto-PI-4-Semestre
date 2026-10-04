@@ -25,6 +25,11 @@ export const productService = {
             search:
               params.search?.trim() ||
               undefined,
+
+            category: params.category,
+            species: params.species,
+            maxStock: params.maxStock,
+            active: params.active,
           },
         },
       );
@@ -47,6 +52,11 @@ export const productService = {
             search:
               params.search?.trim() ||
               undefined,
+
+            category: params.category,
+            species: params.species,
+            maxStock: params.maxStock,
+            active: params.active,
           },
         },
       );
@@ -114,15 +124,13 @@ export const productService = {
     return response.data;
   },
 
-  async deactivate(
+  async remove(
     productId: string,
   ): Promise<{
     message: string;
-    product: Product;
   }> {
     const response = await api.delete<{
       message: string;
-      product: Product;
     }>(
       `/products/${productId}`,
     );

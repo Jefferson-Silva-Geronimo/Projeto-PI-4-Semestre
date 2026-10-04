@@ -15,11 +15,17 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import ChipGroup from '../components/ChipGroup';
 import { useEditProduct } from '../hooks/useEditProduct';
 
 import type {
   AdminStackParamList,
 } from '../types/navigation';
+
+import {
+  categoryOptions,
+  speciesOptions,
+} from '../types/product';
 
 type Props = NativeStackScreenProps<
   AdminStackParamList,
@@ -38,6 +44,8 @@ export default function EditProductScreen({
     price,
     stock,
     imageUrl,
+    category,
+    species,
     active,
     loading,
     saving,
@@ -49,6 +57,8 @@ export default function EditProductScreen({
     setStock,
     setImageUrl,
     setActive,
+    setCategory,
+    setSpecies,
     loadProduct,
     saveProduct,
   } = useEditProduct({
@@ -228,6 +238,36 @@ export default function EditProductScreen({
               autoCapitalize="none"
               autoCorrect={false}
               editable={!saving}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Categoria
+            </Text>
+
+            <ChipGroup
+              options={categoryOptions}
+              selected={category}
+              onSelect={(value) =>
+                value && setCategory(value)
+              }
+              disabled={saving}
+            />
+          </View>
+
+          <View style={styles.field}>
+            <Text style={styles.label}>
+              Espécie
+            </Text>
+
+            <ChipGroup
+              options={speciesOptions}
+              selected={species}
+              onSelect={setSpecies}
+              allowClear
+              allLabel="Todas"
+              disabled={saving}
             />
           </View>
 
