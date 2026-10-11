@@ -1,12 +1,10 @@
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -14,7 +12,12 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import OrderTimeline from '../components/OrderTimeline';
+import ScreenTitle from '../components/ScreenTitle';
 import { useOrderDetails } from '../hooks/useOrderDetails';
 
 import type {
@@ -63,14 +66,7 @@ export default function OrderDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando pedido...
-          </Text>
+          <LoadingIndicator message="Carregando pedido..." />
         </View>
       </SafeAreaView>
     );
@@ -80,34 +76,25 @@ export default function OrderDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage || 'Pedido não encontrado.'}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage || 'Pedido não encontrado.'}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadOrder();
             }}
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="outline"
+            label="Ver meus pedidos"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.navigate('Orders')}
-          >
-            <Text style={styles.secondaryButtonText}>
-              Ver meus pedidos
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -116,14 +103,11 @@ export default function OrderDetailsScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
+        <BackButton
+          label="Pedidos"
+          accessibilityLabel="Voltar para Pedidos"
           onPress={() => navigation.navigate('Orders')}
-        >
-          <Text style={styles.backText}>
-            ‹ Pedidos
-          </Text>
-        </TouchableOpacity>
+        />
 
         <Text style={styles.headerTitle}>
           Detalhes do pedido
@@ -147,9 +131,9 @@ export default function OrderDetailsScreen({
         }
       >
         <View style={styles.orderSummary}>
-          <Text style={styles.orderCode}>
-            Pedido #{order.id.slice(0, 8).toUpperCase()}
-          </Text>
+          <ScreenTitle style={styles.orderCode}>
+            {`Pedido #${order.id.slice(0, 8).toUpperCase()}`}
+          </ScreenTitle>
 
           <Text style={styles.orderDate}>
             Criado em {new Date(order.createdAt).toLocaleString('pt-BR')}
@@ -171,7 +155,7 @@ export default function OrderDetailsScreen({
 
         <OrderTimeline status={order.status} />
 
-        <Text style={styles.sectionTitle}>
+        <Text style={styles.sectionTitle} accessibilityRole="header">
           Produtos
         </Text>
 
@@ -186,7 +170,8 @@ export default function OrderDetailsScreen({
               }}
               style={styles.itemImage}
               resizeMode="cover"
-              accessibilityLabel={`Imagem do produto ${item.productName}`}
+              accessible={false}
+              importantForAccessibility="no"
             />
 
             <View style={styles.itemInformation}>
@@ -219,17 +204,12 @@ export default function OrderDetailsScreen({
           </Text>
         </View>
 
-        <TouchableOpacity
+        <AppButton
+          size="large"
+          label="Voltar ao catálogo"
           style={styles.catalogButton}
-          activeOpacity={0.8}
           onPress={() => navigation.navigate('ClientHome')}
-          accessibilityRole="button"
-          accessibilityLabel="Voltar ao catálogo"
-        >
-          <Text style={styles.catalogButtonText}>
-            Voltar ao catálogo
-          </Text>
-        </TouchableOpacity>
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -249,11 +229,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   headerTitle: {
     color: '#1E293B',
@@ -375,17 +350,7 @@ const styles = StyleSheet.create({
   },
   catalogButton: {
     width: '100%',
-    height: 54,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 22,
-  },
-  catalogButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   centeredContent: {
     flex: 1,
@@ -393,41 +358,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

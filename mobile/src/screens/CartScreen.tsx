@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
@@ -14,7 +13,13 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useCart } from '../hooks/useCart';
+import { colors } from '../theme/tokens';
 import { confirmAction } from '../utils/confirm';
 
 import type {
@@ -95,7 +100,8 @@ export default function CartScreen({
           }}
           style={styles.itemImage}
           resizeMode="cover"
-          accessibilityLabel={`Imagem do produto ${item.product.name}`}
+          accessible={false}
+          importantForAccessibility="no"
         />
 
         <View style={styles.itemInformation}>
@@ -142,7 +148,11 @@ export default function CartScreen({
                 </Text>
               </TouchableOpacity>
 
-              <Text style={styles.quantityValue}>
+              <Text
+                style={styles.quantityValue}
+                accessibilityLabel={`Quantidade de ${item.product.name}: ${item.quantity}`}
+                accessibilityLiveRegion="polite"
+              >
                 {processing ? '...' : item.quantity}
               </Text>
 
@@ -180,6 +190,7 @@ export default function CartScreen({
           </View>
 
           <TouchableOpacity
+            style={styles.removeButton}
             activeOpacity={0.7}
             disabled={processing}
             onPress={() => {
@@ -201,14 +212,7 @@ export default function CartScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando carrinho...
-          </Text>
+          <LoadingIndicator message="Carregando carrinho..." />
         </View>
       </SafeAreaView>
     );
@@ -218,38 +222,25 @@ export default function CartScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadCart();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Tentar carregar o carrinho novamente"
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Voltar"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.goBack()}
-            accessibilityRole="button"
-            accessibilityLabel="Voltar"
-          >
-            <Text style={styles.secondaryButtonText}>
-              Voltar
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -258,22 +249,14 @@ export default function CartScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel="Voltar"
-        >
-          <Text style={styles.backText}>
-            ‹ Voltar
-          </Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.goBack()} />
 
-        <Text style={styles.headerTitle}>
+        <ScreenTitle style={styles.headerTitle}>
           Carrinho
-        </Text>
+        </ScreenTitle>
 
         <TouchableOpacity
+          style={styles.clearButton}
           activeOpacity={0.7}
           disabled={cart.items.length === 0 || clearing}
           onPress={() => {
@@ -324,12 +307,11 @@ export default function CartScreen({
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           errorMessage ? (
-            <Text
+            <FeedbackMessage
+              kind="error"
+              message={errorMessage}
               style={styles.inlineErrorText}
-              accessibilityRole="alert"
-            >
-              {errorMessage}
-            </Text>
+            />
           ) : null
         }
         ListEmptyComponent={
@@ -342,17 +324,10 @@ export default function CartScreen({
               Adicione produtos do catálogo para iniciar seu pedido.
             </Text>
 
-            <TouchableOpacity
-              style={styles.primaryButton}
-              activeOpacity={0.8}
+            <AppButton
+              label="Ver produtos"
               onPress={() => navigation.navigate('ClientHome')}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar ao catálogo"
-            >
-              <Text style={styles.primaryButtonText}>
-                Ver produtos
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         }
         ListFooterComponent={
@@ -379,34 +354,21 @@ export default function CartScreen({
               </View>
 
               {cart.hasUnavailableItems ? (
-                <Text
+                <FeedbackMessage
+                  kind="error"
+                  message="Revise os itens indisponíveis antes de continuar."
                   style={styles.checkoutWarning}
-                  accessibilityRole="alert"
-                >
-                  Revise os itens indisponíveis antes de continuar.
-                </Text>
+                />
               ) : null}
 
-              <TouchableOpacity
-                style={[
-                  styles.checkoutButton,
-                  cart.hasUnavailableItems
-                    ? styles.disabledButton
-                    : undefined,
-                ]}
-                activeOpacity={0.8}
-                disabled={cart.hasUnavailableItems}
-                onPress={() => navigation.navigate('Checkout')}
-                accessibilityRole="button"
+              <AppButton
+                size="large"
+                label="Continuar"
                 accessibilityLabel="Continuar para o resumo do pedido"
-                accessibilityState={{
-                  disabled: cart.hasUnavailableItems,
-                }}
-              >
-                <Text style={styles.checkoutButtonText}>
-                  Continuar
-                </Text>
-              </TouchableOpacity>
+                disabled={cart.hasUnavailableItems}
+                style={styles.checkoutButton}
+                onPress={() => navigation.navigate('Checkout')}
+              />
             </View>
           ) : null
         }
@@ -430,23 +392,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   headerTitle: {
     color: '#1E293B',
     fontSize: 18,
     fontWeight: '700',
   },
+  clearButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   clearText: {
-    color: '#DC2626',
+    color: colors.error,
     fontSize: 14,
     fontWeight: '600',
   },
   disabledText: {
-    color: '#94A3B8',
+    color: colors.disabledText,
   },
   listContent: {
     width: '100%',
@@ -502,6 +465,8 @@ const styles = StyleSheet.create({
   itemFooter: {
     marginTop: 14,
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: 8,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
@@ -510,11 +475,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButton: {
-    width: 34,
-    height: 34,
+    minWidth: 48,
+    minHeight: 48,
     borderRadius: 9,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: colors.borderControl,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -524,7 +489,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   quantityValue: {
-    minWidth: 40,
+    minWidth: 32,
     color: '#1E293B',
     fontSize: 15,
     fontWeight: '700',
@@ -535,11 +500,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+  removeButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
   removeText: {
-    color: '#DC2626',
-    fontSize: 13,
+    color: colors.error,
+    fontSize: 14,
     fontWeight: '600',
-    marginTop: 12,
   },
   separator: {
     height: 12,
@@ -585,21 +554,7 @@ const styles = StyleSheet.create({
   },
   checkoutButton: {
     width: '100%',
-    height: 54,
     marginTop: 16,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  disabledButton: {
-    backgroundColor: '#94A3B8',
-    opacity: 0.7,
   },
   inlineErrorText: {
     color: '#DC2626',
@@ -633,41 +588,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

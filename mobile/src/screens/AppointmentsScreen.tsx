@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   SectionList,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -17,6 +16,8 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import FeedbackMessage from '../components/FeedbackMessage';
 import ListState from '../components/ListState';
 import ScreenHeader from '../components/ScreenHeader';
 import { useRemoteList } from '../hooks/useRemoteList';
@@ -121,15 +122,25 @@ export default function AppointmentsScreen({
       item.status === 'SCHEDULED' ||
       item.status === 'CONFIRMED';
 
+    const when = formatDateTime(item.scheduledAt);
+
     return (
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+        accessible={!canCancel}
+        accessibilityLabel={
+          canCancel
+            ? undefined
+            : `${item.service.name} para ${item.pet.name}, ${when}, ${
+                appointmentStatusLabels[item.status]
+              }, ${formatCurrency(item.priceInCents)}`
+        }
+      >
         <Text style={styles.cardTitle}>
           {item.service.name} · {item.pet.name}
         </Text>
 
-        <Text style={styles.cardText}>
-          {formatDateTime(item.scheduledAt)}
-        </Text>
+        <Text style={styles.cardText}>{when}</Text>
 
         <Text style={styles.cardText}>
           {appointmentStatusLabels[item.status]} ·{' '}
@@ -138,19 +149,14 @@ export default function AppointmentsScreen({
 
         {canCancel ? (
           <View style={styles.row}>
-            <TouchableOpacity
-              style={styles.dangerButton}
-              activeOpacity={0.8}
+            <AppButton
+              variant="danger"
+              label="Cancelar"
+              accessibilityLabel={`Cancelar agendamento de ${item.service.name} para ${item.pet.name} em ${when}`}
               onPress={() => {
                 void handleCancel(item);
               }}
-              accessibilityRole="button"
-              accessibilityLabel="Cancelar agendamento"
-            >
-              <Text style={styles.dangerButtonText}>
-                Cancelar
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         ) : null}
       </View>
@@ -181,7 +187,9 @@ export default function AppointmentsScreen({
           keyExtractor={(item) => item.id}
           renderItem={renderAppointment}
           renderSectionHeader={({ section }) => (
-            <Text style={styles.label}>{section.title}</Text>
+            <Text style={styles.label} accessibilityRole="header">
+              {section.title}
+            </Text>
           )}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={false}
@@ -197,12 +205,11 @@ export default function AppointmentsScreen({
           }
           ListHeaderComponent={
             actionError ? (
-              <Text
+              <FeedbackMessage
+                kind="error"
+                message={actionError}
                 style={styles.errorText}
-                accessibilityRole="alert"
-              >
-                {actionError}
-              </Text>
+              />
             ) : null
           }
           ListEmptyComponent={

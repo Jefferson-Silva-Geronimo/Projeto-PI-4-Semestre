@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   SafeAreaView,
@@ -14,12 +13,19 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useAddToCart } from '../hooks/useAddToCart';
 import { useProductDetails } from '../hooks/useProductDetails';
 
 import type {
   ClientStackParamList,
 } from '../types/navigation';
+
+import { colors } from '../theme/tokens';
 
 import {
   getCategoryLabel,
@@ -77,14 +83,7 @@ export default function ProductDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando produto...
-          </Text>
+          <LoadingIndicator message="Carregando produto..." />
         </View>
       </SafeAreaView>
     );
@@ -94,38 +93,25 @@ export default function ProductDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage || 'Produto não encontrado.'}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage || 'Produto não encontrado.'}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadProduct();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Tentar carregar o produto novamente"
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Voltar ao catálogo"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.goBack()}
-            accessibilityRole="button"
-            accessibilityLabel="Voltar para o catálogo"
-          >
-            <Text style={styles.secondaryButtonText}>
-              Voltar ao catálogo
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -136,26 +122,21 @@ export default function ProductDetailsScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
+        <BackButton
           onPress={() => navigation.goBack()}
-          accessibilityRole="button"
           accessibilityLabel="Voltar para o catálogo"
-        >
-          <Text style={styles.backText}>
-            ‹ Voltar
-          </Text>
-        </TouchableOpacity>
+        />
 
         <Text style={styles.headerTitle}>
           Detalhes do produto
         </Text>
 
         <TouchableOpacity
+          style={styles.cartButton}
           activeOpacity={0.7}
           onPress={() => navigation.navigate('Cart')}
           accessibilityRole="button"
-          accessibilityLabel="Abrir carrinho"
+          accessibilityHint="Abre o carrinho de compras."
         >
           <Text style={styles.cartText}>
             Carrinho
@@ -183,13 +164,13 @@ export default function ProductDetailsScreen({
           }}
           style={styles.image}
           resizeMode="cover"
-          accessibilityLabel={`Imagem do produto ${product.name}`}
+          accessibilityLabel={`Foto de ${product.name}`}
         />
 
         <View style={styles.information}>
-          <Text style={styles.name}>
+          <ScreenTitle style={styles.name}>
             {product.name}
-          </Text>
+          </ScreenTitle>
 
           <Text style={styles.meta}>
             {getCategoryLabel(product.category)} ·{' '}
@@ -215,7 +196,7 @@ export default function ProductDetailsScreen({
 
           <View style={styles.divider} />
 
-          <Text style={styles.sectionTitle}>
+          <Text style={styles.sectionTitle} accessibilityRole="header">
             Descrição
           </Text>
 
@@ -223,7 +204,11 @@ export default function ProductDetailsScreen({
             {product.description}
           </Text>
 
-          <View style={styles.stockContainer}>
+          <View
+            style={styles.stockContainer}
+            accessible
+            accessibilityLabel={`Estoque disponível: ${product.stock}`}
+          >
             <Text style={styles.stockLabel}>
               Estoque disponível
             </Text>
@@ -238,7 +223,7 @@ export default function ProductDetailsScreen({
 
           {!unavailable ? (
             <View style={styles.quantitySection}>
-              <Text style={styles.sectionTitle}>
+              <Text style={styles.sectionTitle} accessibilityRole="header">
                 Quantidade
               </Text>
 
@@ -259,7 +244,11 @@ export default function ProductDetailsScreen({
                   </Text>
                 </TouchableOpacity>
 
-                <Text style={styles.quantityValue}>
+                <Text
+                  style={styles.quantityValue}
+                  accessibilityLabel={`Quantidade: ${quantity}`}
+                  accessibilityLiveRegion="polite"
+                >
                   {quantity}
                 </Text>
 
@@ -289,55 +278,33 @@ export default function ProductDetailsScreen({
             </View>
           ) : null}
 
-          {cartErrorMessage ? (
-            <Text
-              style={styles.actionErrorText}
-              accessibilityRole="alert"
-            >
-              {cartErrorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={cartErrorMessage}
+            style={styles.actionErrorText}
+          />
 
-          {successMessage ? (
-            <Text
-              style={styles.successText}
-              accessibilityRole="alert"
-            >
-              {successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={successMessage}
+            style={styles.successText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.addButton,
-              unavailable || addingToCart
-                ? styles.disabledButton
-                : undefined,
-            ]}
-            activeOpacity={0.8}
-            disabled={unavailable || addingToCart}
+          <AppButton
+            size="large"
+            label={
+              unavailable
+                ? 'Produto indisponível'
+                : 'Adicionar ao carrinho'
+            }
+            loading={addingToCart}
+            loadingLabel="Adicionando..."
+            disabled={unavailable}
+            style={styles.addButton}
             onPress={() => {
               void handleAddToCart();
             }}
-            accessibilityRole="button"
-            accessibilityLabel={
-              unavailable
-                ? 'Produto indisponível'
-                : 'Adicionar produto ao carrinho'
-            }
-            accessibilityState={{
-              disabled: unavailable || addingToCart,
-              busy: addingToCart,
-            }}
-          >
-            <Text style={styles.addButtonText}>
-              {unavailable
-                ? 'Produto indisponível'
-                : addingToCart
-                  ? 'Adicionando...'
-                  : 'Adicionar ao carrinho'}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -364,15 +331,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   headerTitle: {
     color: '#1E293B',
     fontSize: 17,
     fontWeight: '700',
+  },
+  cartButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cartText: {
     color: '#2D6CDF',
@@ -467,11 +435,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityButton: {
-    width: 46,
-    height: 46,
+    minWidth: 48,
+    minHeight: 48,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: colors.borderControl,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -502,21 +470,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     width: '100%',
-    height: 56,
     marginTop: 28,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  disabledButton: {
-    backgroundColor: '#94A3B8',
-    opacity: 0.7,
-  },
-  addButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   centeredContent: {
     flex: 1,
@@ -524,41 +478,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

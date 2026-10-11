@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   SafeAreaView,
@@ -13,7 +12,12 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useOrders } from '../hooks/useOrders';
 
 import type {
@@ -72,7 +76,14 @@ export default function OrdersScreen({
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={`Abrir pedido ${item.id}`}
+        accessibilityLabel={`Pedido ${item.id
+          .slice(0, 8)
+          .toUpperCase()}, ${statusLabels[item.status]}, ${new Date(
+          item.createdAt,
+        ).toLocaleString('pt-BR')}, ${item.items.length} ${
+          item.items.length === 1 ? 'produto' : 'produtos'
+        }, total ${formatCurrency(item.totalInCents)}`}
+        accessibilityHint="Abre os detalhes do pedido."
       >
         <View style={styles.orderHeader}>
           <Text style={styles.orderCode}>
@@ -115,14 +126,7 @@ export default function OrdersScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando pedidos...
-          </Text>
+          <LoadingIndicator message="Carregando pedidos..." />
         </View>
       </SafeAreaView>
     );
@@ -132,34 +136,25 @@ export default function OrdersScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadOrders();
             }}
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="outline"
+            label="Voltar"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.secondaryButtonText}>
-              Voltar
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -168,24 +163,18 @@ export default function OrdersScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backText}>
-            ‹ Voltar
-          </Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.goBack()} />
 
-        <Text style={styles.headerTitle}>
+        <ScreenTitle style={styles.headerTitle}>
           Meus pedidos
-        </Text>
+        </ScreenTitle>
 
         <View style={styles.headerSpacer} />
       </View>
 
       <View style={{ paddingHorizontal: 20, paddingTop: 12 }}>
         <ChipGroup
+          groupLabel="Filtrar por status"
           options={orderStatusOptions}
           selected={statusFilter}
           onSelect={setStatusFilter}
@@ -218,12 +207,11 @@ export default function OrdersScreen({
         }
         ListHeaderComponent={
           errorMessage ? (
-            <Text
+            <FeedbackMessage
+              kind="error"
+              message={errorMessage}
               style={styles.inlineErrorText}
-              accessibilityRole="alert"
-            >
-              {errorMessage}
-            </Text>
+            />
           ) : null
         }
         ListEmptyComponent={
@@ -236,15 +224,10 @@ export default function OrdersScreen({
               Seus pedidos aparecerão aqui após a confirmação da compra.
             </Text>
 
-            <TouchableOpacity
-              style={styles.primaryButton}
-              activeOpacity={0.8}
+            <AppButton
+              label="Ver produtos"
               onPress={() => navigation.navigate('ClientHome')}
-            >
-              <Text style={styles.primaryButtonText}>
-                Ver produtos
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         }
       />
@@ -266,11 +249,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   headerTitle: {
     color: '#1E293B',
@@ -385,41 +363,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

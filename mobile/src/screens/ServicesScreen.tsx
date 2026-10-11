@@ -3,7 +3,6 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -11,6 +10,7 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
 import ListState from '../components/ListState';
 import ScreenHeader from '../components/ScreenHeader';
 import { useRemoteList } from '../hooks/useRemoteList';
@@ -44,7 +44,9 @@ export default function ServicesScreen({
   function renderService({ item }: { item: Service }) {
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {item.name}
+        </Text>
 
         <Text style={styles.cardText}>
           {item.description}
@@ -54,30 +56,29 @@ export default function ServicesScreen({
           Duração: {item.durationMinutes} min
         </Text>
 
-        <Text style={styles.cardPrice}>
+        <Text
+          style={styles.cardPrice}
+          accessibilityLabel={`Preços: pequeno ${formatCurrency(
+            item.priceSmallInCents,
+          )}, médio ${formatCurrency(
+            item.priceMediumInCents,
+          )}, grande ${formatCurrency(item.priceLargeInCents)}`}
+        >
           P {formatCurrency(item.priceSmallInCents)} · M{' '}
           {formatCurrency(item.priceMediumInCents)} · G{' '}
           {formatCurrency(item.priceLargeInCents)}
         </Text>
 
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            { marginTop: 8 },
-          ]}
-          activeOpacity={0.8}
+        <AppButton
+          label="Agendar"
+          accessibilityLabel={`Agendar ${item.name}`}
+          style={{ marginTop: 8 }}
           onPress={() =>
             navigation.navigate('BookAppointment', {
               serviceId: item.id,
             })
           }
-          accessibilityRole="button"
-          accessibilityLabel={`Agendar ${item.name}`}
-        >
-          <Text style={styles.primaryButtonText}>
-            Agendar
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
     );
   }

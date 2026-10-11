@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
@@ -15,8 +14,12 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import OfflineNotice from '../components/OfflineNotice';
+import ScreenTitle from '../components/ScreenTitle';
 import { useAuth } from '../hooks/useAuth';
 import { useClientProducts } from '../hooks/useClientProducts';
 
@@ -29,6 +32,8 @@ import {
   type Product,
   type Species,
 } from '../types/product';
+
+import { colors } from '../theme/tokens';
 
 import {
   formatCurrency,
@@ -88,8 +93,10 @@ export default function ClientHomeScreen({
         activeOpacity={0.8}
         onPress={() => handleOpenProduct(item)}
         accessibilityRole="button"
-        accessibilityLabel={`Abrir detalhes do produto ${item.name}`}
-        accessibilityHint="Abre a página com as informações completas do produto."
+        accessibilityLabel={`${item.name}. ${formatCurrency(item.priceInCents)}. ${
+          isUnavailable ? 'Indisponível' : 'Disponível'
+        }. ${item.description}`}
+        accessibilityHint="Abre os detalhes do produto."
       >
         <Image
           source={{
@@ -97,7 +104,8 @@ export default function ClientHomeScreen({
           }}
           style={styles.productImage}
           resizeMode="cover"
-          accessibilityLabel={`Imagem do produto ${item.name}`}
+          accessible={false}
+          importantForAccessibility="no"
         />
 
         <View style={styles.productInformation}>
@@ -139,14 +147,7 @@ export default function ClientHomeScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando produtos...
-          </Text>
+          <LoadingIndicator message="Carregando produtos..." />
         </View>
       </SafeAreaView>
     );
@@ -162,40 +163,27 @@ export default function ClientHomeScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadProducts();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Tentar carregar os produtos novamente"
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Sair da conta"
+            style={{ marginTop: 8 }}
             onPress={() => {
               void handleLogout();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
-          >
-            <Text style={styles.secondaryButtonText}>
-              Sair da conta
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -209,27 +197,23 @@ export default function ClientHomeScreen({
             PETSHOP
           </Text>
 
-          <Text style={styles.title}>
-            Olá, {user?.name}
-          </Text>
+          <ScreenTitle style={styles.title}>
+            {`Olá, ${user?.name ?? ''}`}
+          </ScreenTitle>
 
           <Text style={styles.subtitle}>
             Confira os produtos disponíveis.
           </Text>
         </View>
 
-        <TouchableOpacity
-          activeOpacity={0.7}
+        <AppButton
+          variant="link"
+          label="Sair"
+          accessibilityLabel="Sair da conta"
           onPress={() => {
             void handleLogout();
           }}
-          accessibilityRole="button"
-          accessibilityLabel="Sair da conta"
-        >
-          <Text style={styles.logoutText}>
-            Sair
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
 
       {offline ? <OfflineNotice /> : null}
@@ -243,9 +227,12 @@ export default function ClientHomeScreen({
           onChangeText={setSearch}
           autoCorrect={false}
           returnKeyType="search"
+          accessibilityLabel="Buscar produto"
+          accessibilityRole="search"
         />
 
         <ChipGroup
+          groupLabel="Filtrar por categoria"
           options={categoryOptions}
           selected={category}
           onSelect={setCategory}
@@ -253,6 +240,7 @@ export default function ClientHomeScreen({
         />
 
         <ChipGroup
+          groupLabel="Filtrar por espécie"
           options={speciesFilterOptions}
           selected={species}
           onSelect={setSpecies}
@@ -316,9 +304,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   searchInput: {
-    height: 46,
+    minHeight: 48,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: colors.borderControl,
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 15,
@@ -360,12 +348,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginTop: 4,
-  },
-  logoutText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
-    paddingTop: 4,
   },
   quickActions: {
     paddingHorizontal: 20,
@@ -491,41 +473,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

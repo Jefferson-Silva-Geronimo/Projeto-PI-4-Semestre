@@ -50,7 +50,10 @@ export default function PetsScreen({ navigation }: Props) {
           })
         }
         accessibilityRole="button"
-        accessibilityLabel={`Editar ${item.name}`}
+        accessibilityLabel={`${item.name}, ${getSpeciesLabel(item.species)}${
+          item.breed ? `, ${item.breed}` : ''
+        }, porte ${getSizeLabel(item.size)}`}
+        accessibilityHint="Abre a edição do pet."
       >
         <Text style={styles.cardTitle}>{item.name}</Text>
 
