@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
 
+import { colors } from './tokens';
+
 export const authStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -46,9 +48,9 @@ export const authStyles = StyleSheet.create({
 
   input: {
     width: '100%',
-    height: 56,
+    minHeight: 56,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: colors.borderControl,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
@@ -62,12 +64,12 @@ export const authStyles = StyleSheet.create({
 
   inputDisabled: {
     backgroundColor: '#F1F5F9',
-    color: '#64748B',
+    color: colors.disabledText,
   },
 
   button: {
     width: '100%',
-    height: 56,
+    minHeight: 56,
     backgroundColor: '#2D6CDF',
     borderRadius: 12,
     justifyContent: 'center',
@@ -76,7 +78,7 @@ export const authStyles = StyleSheet.create({
   },
 
   buttonDisabled: {
-    opacity: 0.6,
+    backgroundColor: colors.disabledBackground,
   },
 
   buttonText: {
@@ -86,15 +88,13 @@ export const authStyles = StyleSheet.create({
   },
 
   link: {
+    minHeight: 48,
+    paddingVertical: 12,
     textAlign: 'center',
+    textAlignVertical: 'center',
     color: '#2D6CDF',
     fontSize: 15,
     fontWeight: '500',
-  },
-
-  linkHighlight: {
-    color: '#D97706',
-    fontWeight: '600',
   },
 
   errorText: {
@@ -157,7 +157,7 @@ export const authStyles = StyleSheet.create({
   },
 
   createProductButton: {
-    height: 48,
+    minHeight: 48,
     paddingHorizontal: 18,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -269,7 +269,7 @@ export const authStyles = StyleSheet.create({
   },
 
   productsRetryButton: {
-    height: 48,
+    minHeight: 48,
     paddingHorizontal: 24,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -386,7 +386,7 @@ export const authStyles = StyleSheet.create({
 
   createProductSubmitButton: {
     width: '100%',
-    height: 56,
+    minHeight: 56,
     backgroundColor: '#2D6CDF',
     borderRadius: 12,
     justifyContent: 'center',
@@ -396,7 +396,7 @@ export const authStyles = StyleSheet.create({
 
   createProductCancelButton: {
     width: '100%',
-    height: 48,
+    minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 8,
