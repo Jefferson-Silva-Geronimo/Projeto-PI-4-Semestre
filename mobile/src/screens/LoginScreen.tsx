@@ -1,14 +1,19 @@
+import { useRef } from 'react';
+
 import {
   SafeAreaView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
+import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
+import ScreenTitle from '../components/ScreenTitle';
 import { useLogin } from '../hooks/useLogin';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -31,6 +36,8 @@ export default function LoginScreen({
     handleLogin,
   } = useLogin();
 
+  const passwordRef = useRef<TextInput>(null);
+
   async function onLoginPress() {
     await handleLogin();
   }
@@ -42,42 +49,39 @@ export default function LoginScreen({
           PETSHOP
         </Text>
 
-        <Text style={styles.title}>
+        <ScreenTitle style={styles.title}>
           Bem-vindo
-        </Text>
+        </ScreenTitle>
 
         <Text style={styles.subtitle}>
           Entre com suas credenciais para continuar.
         </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage
-                ? styles.inputError
-                : undefined,
-            ]}
-            placeholder="Digite seu e-mail"
-            placeholderTextColor="#64748B"
+          <AppTextField
+            label="E-mail"
+            style={errorMessage ? styles.inputError : undefined}
+            placeholder="nome@exemplo.com"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
+            textContentType="emailAddress"
             value={email}
             onChangeText={setEmail}
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => passwordRef.current?.focus()}
           />
 
           <PasswordInput
-            style={[
-              styles.input,
-              errorMessage
-                ? styles.inputError
-                : undefined,
-            ]}
+            ref={passwordRef}
+            label="Senha"
+            style={errorMessage ? styles.inputError : undefined}
             placeholder="Digite sua senha"
+            autoComplete="current-password"
+            textContentType="password"
             value={password}
             onChangeText={setPassword}
             editable={!loading}
@@ -85,64 +89,34 @@ export default function LoginScreen({
             onSubmitEditing={onLoginPress}
           />
 
-          {errorMessage ? (
-            <Text
-              style={styles.errorText}
-              accessibilityRole="alert"
-            >
-              {errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.errorText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              loading
-                ? styles.buttonDisabled
-                : undefined,
-            ]}
-            activeOpacity={0.8}
+          <AppButton
+            size="large"
+            label="Entrar"
+            loading={loading}
+            loadingLabel="Entrando..."
             onPress={onLoginPress}
-            disabled={loading}
-            accessibilityRole="button"
-            accessibilityLabel="Entrar no aplicativo"
-            accessibilityState={{
-              disabled: loading,
-              busy: loading,
-            }}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Entrando...' : 'Entrar'}
-            </Text>
-          </TouchableOpacity>
+            style={{ marginTop: 8 }}
+          />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Esqueci minha senha"
             disabled={loading}
-            onPress={() =>
-              navigation.navigate('ForgotPassword')
-            }
-            accessibilityRole="button"
-            accessibilityLabel="Recuperar senha"
-          >
-            <Text style={styles.link}>
-              Esqueci minha senha
-            </Text>
-          </TouchableOpacity>
+            onPress={() => navigation.navigate('ForgotPassword')}
+          />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Criar conta"
             disabled={loading}
-            onPress={() =>
-              navigation.navigate('Register')
-            }
-            accessibilityRole="button"
-            accessibilityLabel="Criar uma nova conta"
-          >
-            <Text style={styles.link}>
-              Criar conta
-            </Text>
-          </TouchableOpacity>
+            onPress={() => navigation.navigate('Register')}
+          />
         </View>
       </View>
     </SafeAreaView>

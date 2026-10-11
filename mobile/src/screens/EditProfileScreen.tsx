@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import {
   KeyboardAvoidingView,
   Platform,
@@ -5,18 +7,18 @@ import {
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
-  View,
 } from 'react-native';
 
 import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
+import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
 import ScreenHeader from '../components/ScreenHeader';
 import { useEditProfile } from '../hooks/useEditProfile';
-import { authStyles } from '../theme/authStyles';
 import { commonStyles as styles } from '../theme/commonStyles';
 
 import type { ClientStackParamList } from '../types/navigation';
@@ -30,6 +32,9 @@ export default function EditProfileScreen({
   navigation,
 }: Props) {
   const form = useEditProfile();
+
+  const phoneRef = useRef<TextInput>(null);
+  const newPasswordRef = useRef<TextInput>(null);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -48,99 +53,91 @@ export default function EditProfileScreen({
           contentContainerStyle={styles.formContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View>
-            <Text style={styles.label}>Nome</Text>
+          <AppTextField
+            label="Nome"
+            value={form.name}
+            onChangeText={form.setName}
+            autoComplete="name"
+            textContentType="name"
+            autoCapitalize="words"
+            editable={!form.saving}
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => phoneRef.current?.focus()}
+          />
 
-            <TextInput
-              style={authStyles.input}
-              value={form.name}
-              onChangeText={form.setName}
-              placeholderTextColor="#64748B"
-              editable={!form.saving}
-            />
-          </View>
+          <AppTextField
+            ref={phoneRef}
+            label="Telefone"
+            value={form.phone}
+            onChangeText={form.setPhone}
+            placeholder="11 91234-5678"
+            helperText="Com DDD."
+            keyboardType="phone-pad"
+            autoComplete="tel"
+            textContentType="telephoneNumber"
+            maxLength={15}
+            editable={!form.saving}
+            returnKeyType="done"
+          />
 
-          <View>
-            <Text style={styles.label}>Telefone</Text>
-
-            <TextInput
-              style={authStyles.input}
-              value={form.phone}
-              onChangeText={form.setPhone}
-              placeholder="DDD + número"
-              placeholderTextColor="#64748B"
-              keyboardType="phone-pad"
-              maxLength={15}
-              editable={!form.saving}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.primaryButton,
-              form.saving ? styles.disabled : undefined,
-            ]}
-            activeOpacity={0.8}
-            disabled={form.saving}
+          <AppButton
+            label="Salvar dados"
+            loading={form.saving}
             onPress={() => {
               void form.saveProfile();
             }}
-            accessibilityRole="button"
-          >
-            <Text style={styles.primaryButtonText}>
-              Salvar dados
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <Text style={[styles.cardTitle, { marginTop: 12 }]}>
+          <Text
+            style={[styles.cardTitle, { marginTop: 12 }]}
+            accessibilityRole="header"
+          >
             Alterar senha
           </Text>
 
           <PasswordInput
-            placeholder="Senha atual"
+            label="Senha atual"
             value={form.currentPassword}
             onChangeText={form.setCurrentPassword}
+            autoComplete="current-password"
+            textContentType="password"
             editable={!form.saving}
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => newPasswordRef.current?.focus()}
           />
 
           <PasswordInput
-            placeholder="Nova senha"
+            ref={newPasswordRef}
+            label="Nova senha"
             value={form.newPassword}
             onChangeText={form.setNewPassword}
+            autoComplete="new-password"
+            textContentType="newPassword"
             editable={!form.saving}
+            returnKeyType="done"
           />
 
-          <TouchableOpacity
-            style={styles.outlineButton}
-            activeOpacity={0.8}
-            disabled={form.saving}
+          <AppButton
+            variant="outline"
+            label="Alterar senha"
+            loading={form.saving}
             onPress={() => {
               void form.changePassword();
             }}
-            accessibilityRole="button"
-          >
-            <Text style={styles.outlineButtonText}>
-              Alterar senha
-            </Text>
-          </TouchableOpacity>
+          />
 
-          {form.errorMessage ? (
-            <Text
-              style={styles.errorText}
-              accessibilityRole="alert"
-            >
-              {form.errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={form.errorMessage}
+            style={styles.errorText}
+          />
 
-          {form.successMessage ? (
-            <Text
-              style={[styles.cardText, { color: '#15803D' }]}
-              accessibilityRole="alert"
-            >
-              {form.successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={form.successMessage}
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,14 +1,19 @@
+import { useRef } from 'react';
+
 import {
   SafeAreaView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
+import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
+import ScreenTitle from '../components/ScreenTitle';
 import { useRegister } from '../hooks/useRegister';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -38,6 +43,13 @@ export default function RegisterScreen({
     handleRegister,
   } = useRegister();
 
+  const emailRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextInput>(null);
+  const confirmationRef = useRef<TextInput>(null);
+
+  const errorStyle = errorMessage ? styles.inputError : undefined;
+
   async function onRegisterPress() {
     const registered = await handleRegister();
 
@@ -53,78 +65,87 @@ export default function RegisterScreen({
       <View style={styles.content}>
         <Text style={styles.logo}>PETSHOP</Text>
 
-        <Text style={styles.title}>Criar conta</Text>
+        <ScreenTitle style={styles.title}>Criar conta</ScreenTitle>
 
         <Text style={styles.subtitle}>
           Preencha os dados para continuar.
         </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Nome completo"
+          <AppTextField
+            label="Nome completo"
+            style={errorStyle}
+            placeholder="Maria da Silva"
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
             autoCorrect={false}
             autoComplete="name"
+            textContentType="name"
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => emailRef.current?.focus()}
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Digite seu e-mail"
+          <AppTextField
+            ref={emailRef}
+            label="E-mail"
+            style={errorStyle}
+            placeholder="nome@exemplo.com"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
+            textContentType="emailAddress"
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => phoneRef.current?.focus()}
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Telefone com DDD"
-            placeholderTextColor="#64748B"
+          <AppTextField
+            ref={phoneRef}
+            label="Telefone"
+            style={errorStyle}
+            placeholder="11 91234-5678"
+            helperText="Com DDD."
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
             autoComplete="tel"
+            textContentType="telephoneNumber"
             maxLength={15}
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => passwordRef.current?.focus()}
           />
 
           <PasswordInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
+            ref={passwordRef}
+            label="Senha"
+            style={errorStyle}
             placeholder="Digite sua senha"
+            autoComplete="new-password"
+            textContentType="newPassword"
             value={password}
             onChangeText={setPassword}
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => confirmationRef.current?.focus()}
           />
 
           <PasswordInput
-            style={[
-              styles.input,
-              errorMessage && styles.inputError,
-            ]}
-            placeholder="Confirme sua senha"
+            ref={confirmationRef}
+            label="Confirmar senha"
+            style={errorStyle}
+            placeholder="Repita a senha"
+            autoComplete="new-password"
+            textContentType="newPassword"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
             editable={!loading}
@@ -132,41 +153,33 @@ export default function RegisterScreen({
             onSubmitEditing={onRegisterPress}
           />
 
-          {errorMessage ? (
-            <Text style={styles.errorText}>
-              {errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.errorText}
+          />
 
-          {successMessage ? (
-            <Text style={styles.successText}>
-              {successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={successMessage}
+            style={styles.successText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              loading && styles.buttonDisabled,
-            ]}
-            activeOpacity={0.8}
+          <AppButton
+            size="large"
+            label="Cadastrar"
+            loading={loading}
+            loadingLabel="Cadastrando..."
             onPress={onRegisterPress}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? 'Cadastrando...' : 'Cadastrar'}
-            </Text>
-          </TouchableOpacity>
+            style={{ marginTop: 8 }}
+          />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Já possui uma conta? Entrar"
             disabled={loading}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.link}>
-              Já possui uma conta? Entrar
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     </SafeAreaView>
