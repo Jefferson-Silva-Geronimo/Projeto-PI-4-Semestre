@@ -18,6 +18,7 @@ import {
 } from '@react-navigation/native';
 
 import { cartService } from '../services/cart.service';
+import { colors } from '../theme/tokens';
 
 import type { ClientStackParamList } from '../types/navigation';
 
@@ -58,9 +59,13 @@ export default function BottomMenu({
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <View style={styles.container} accessibilityRole="tablist">
         {tabs.map((tab) => {
           const selected = tab.route === current;
+          const cartLabel =
+            tab.route === 'Cart' && cartCount > 0
+              ? `Carrinho, ${cartCount} ${cartCount === 1 ? 'item' : 'itens'}`
+              : undefined;
 
           return (
             <TouchableOpacity
@@ -74,11 +79,13 @@ export default function BottomMenu({
                   );
                 }
               }}
-              accessibilityRole="button"
+              accessibilityRole="tab"
               accessibilityState={{ selected }}
-              accessibilityLabel={tab.label}
+              accessibilityLabel={cartLabel}
             >
               <Text
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.3}
                 style={[
                   styles.label,
                   selected ? styles.labelSelected : undefined,
@@ -88,7 +95,11 @@ export default function BottomMenu({
               </Text>
 
               {tab.route === 'Cart' && cartCount > 0 ? (
-                <View style={styles.badge}>
+                <View
+                  style={styles.badge}
+                  importantForAccessibility="no-hide-descendants"
+                  accessibilityElementsHidden
+                >
                   <Text style={styles.badgeText}>
                     {cartCount}
                   </Text>
@@ -110,18 +121,19 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    height: 56,
+    minHeight: 56,
   },
   tab: {
     flex: 1,
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 4,
   },
   label: {
-    color: '#475569',
-    fontSize: 12,
+    color: colors.textSecondary,
+    fontSize: 13,
     fontWeight: '600',
   },
   labelSelected: {
