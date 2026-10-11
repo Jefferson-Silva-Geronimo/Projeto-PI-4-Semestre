@@ -353,7 +353,7 @@ export const authStyles = StyleSheet.create({
   },
 
   productDescriptionInput: {
-    height: 120,
+    minHeight: 120,
     paddingTop: 16,
     paddingBottom: 16,
   },
@@ -386,11 +386,6 @@ export const authStyles = StyleSheet.create({
 
   createProductSubmitButton: {
     width: '100%',
-    minHeight: 56,
-    backgroundColor: '#2D6CDF',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginTop: 4,
   },
 

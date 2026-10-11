@@ -8,7 +8,6 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -16,14 +15,21 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
 import ListState from '../components/ListState';
 import ScreenHeader from '../components/ScreenHeader';
 import { useRemoteList } from '../hooks/useRemoteList';
 import { appointmentService } from '../services/appointment.service';
 import { commonStyles as styles } from '../theme/commonStyles';
 import { formatCurrency } from '../utils/currency';
-import { formatDateKey, formatTime, nextDays } from '../utils/date';
+import {
+  formatDateKey,
+  formatDateKeyLong,
+  formatTime,
+  nextDays,
+} from '../utils/date';
 import { getApiErrorMessage } from '../utils/error';
 
 import {
@@ -114,10 +120,25 @@ export default function AdminAgendaScreen({
       item.status === 'SCHEDULED' ||
       item.status === 'CONFIRMED';
 
+    const time = formatTime(item.scheduledAt);
+    const hasActions = Boolean(advance) || canCancel;
+
     return (
-      <View style={styles.card}>
+      <View
+        style={styles.card}
+        accessible={!hasActions}
+        accessibilityLabel={
+          hasActions
+            ? undefined
+            : `${time}, ${item.service.name}, pet ${item.pet.name}, tutor ${
+                item.user.name
+              }, ${appointmentStatusLabels[item.status]}, ${formatCurrency(
+                item.priceInCents,
+              )}`
+        }
+      >
         <Text style={styles.cardTitle}>
-          {formatTime(item.scheduledAt)} · {item.service.name}
+          {time} · {item.service.name}
         </Text>
 
         <Text style={styles.cardText}>
@@ -138,33 +159,27 @@ export default function AdminAgendaScreen({
         {advance || canCancel ? (
           <View style={styles.row}>
             {advance ? (
-              <TouchableOpacity
-                style={styles.outlineButton}
-                activeOpacity={0.8}
+              <AppButton
+                variant="outline"
+                label={nextStatusLabel[item.status] ?? ''}
+                accessibilityLabel={`${
+                  nextStatusLabel[item.status] ?? ''
+                } agendamento de ${item.pet.name} às ${time}`}
                 onPress={() => {
                   void handleStatus(item, advance);
                 }}
-                accessibilityRole="button"
-              >
-                <Text style={styles.outlineButtonText}>
-                  {nextStatusLabel[item.status]}
-                </Text>
-              </TouchableOpacity>
+              />
             ) : null}
 
             {canCancel ? (
-              <TouchableOpacity
-                style={styles.dangerButton}
-                activeOpacity={0.8}
+              <AppButton
+                variant="danger"
+                label="Cancelar"
+                accessibilityLabel={`Cancelar agendamento de ${item.pet.name} às ${time}`}
                 onPress={() => {
                   void handleStatus(item, 'CANCELLED');
                 }}
-                accessibilityRole="button"
-              >
-                <Text style={styles.dangerButtonText}>
-                  Cancelar
-                </Text>
-              </TouchableOpacity>
+              />
             ) : null}
           </View>
         ) : null}
@@ -186,9 +201,11 @@ export default function AdminAgendaScreen({
         }}
       >
         <ChipGroup
+          groupLabel="Dia da agenda"
           options={days.map((day) => ({
             value: day,
             label: formatDateKey(day),
+            accessibilityLabel: formatDateKeyLong(day),
           }))}
           selected={date}
           onSelect={(value) => value && setDate(value)}
@@ -221,17 +238,19 @@ export default function AdminAgendaScreen({
           }
           ListHeaderComponent={
             actionError ? (
-              <Text
+              <FeedbackMessage
+                kind="error"
+                message={actionError}
                 style={styles.errorText}
-                accessibilityRole="alert"
-              >
-                {actionError}
-              </Text>
+              />
             ) : null
           }
           ListEmptyComponent={
             <View style={styles.centered}>
-              <Text style={styles.emptyTitle}>
+              <Text
+                style={styles.emptyTitle}
+                accessibilityLiveRegion="polite"
+              >
                 Nenhum agendamento
               </Text>
 

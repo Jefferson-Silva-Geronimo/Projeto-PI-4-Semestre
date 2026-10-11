@@ -11,6 +11,8 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import ScreenTitle from '../components/ScreenTitle';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
 import { useAuth } from '../hooks/useAuth';
 
@@ -59,9 +61,9 @@ export default function AdminHomeScreen({
           PETSHOP
         </Text>
 
-        <Text style={styles.title}>
+        <ScreenTitle style={styles.title}>
           Área administrativa
-        </Text>
+        </ScreenTitle>
 
         <Text style={styles.subtitle}>
           Bem-vindo, {user?.name}.
@@ -72,6 +74,8 @@ export default function AdminHomeScreen({
             <View
               key={card.label}
               style={styles.indicatorCard}
+              accessible
+              accessibilityLabel={`${card.label}: ${card.value ?? 'sem dados'}`}
             >
               <Text style={styles.indicatorValue}>
                 {card.value ?? '-'}
@@ -85,24 +89,18 @@ export default function AdminHomeScreen({
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity
+          <AppButton
+            size="large"
+            label="Gerenciar produtos"
             style={styles.primaryButton}
-            activeOpacity={0.8}
             onPress={() => navigation.navigate('AdminProducts')}
-            accessibilityRole="button"
-            accessibilityLabel="Acessar o gerenciamento de produtos"
-          >
-            <Text style={styles.primaryButtonText}>
-              Gerenciar produtos
-            </Text>
-          </TouchableOpacity>
+          />
 
           <TouchableOpacity
             style={styles.secondaryActionButton}
             activeOpacity={0.8}
             onPress={() => navigation.navigate('AdminOrders')}
             accessibilityRole="button"
-            accessibilityLabel="Acessar o gerenciamento de pedidos"
           >
             <Text style={styles.secondaryActionTitle}>
               Gerenciar pedidos
@@ -118,7 +116,6 @@ export default function AdminHomeScreen({
             activeOpacity={0.8}
             onPress={() => navigation.navigate('AdminServices')}
             accessibilityRole="button"
-            accessibilityLabel="Acessar o gerenciamento de serviços"
           >
             <Text style={styles.secondaryActionTitle}>
               Gerenciar serviços
@@ -134,7 +131,6 @@ export default function AdminHomeScreen({
             activeOpacity={0.8}
             onPress={() => navigation.navigate('AdminAgenda')}
             accessibilityRole="button"
-            accessibilityLabel="Acessar a agenda do dia"
           >
             <Text style={styles.secondaryActionTitle}>
               Agenda do dia
@@ -145,19 +141,14 @@ export default function AdminHomeScreen({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          <AppButton
+            variant="link"
+            label="Sair da conta"
             style={styles.logoutButton}
-            activeOpacity={0.7}
             onPress={() => {
               void handleLogout();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Sair da conta"
-          >
-            <Text style={styles.logoutText}>
-              Sair da conta
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -228,16 +219,6 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     width: '100%',
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
   },
   secondaryActionButton: {
     width: '100%',
@@ -262,14 +243,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   logoutButton: {
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 12,
-  },
-  logoutText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

@@ -1,3 +1,5 @@
+import { useRef } from 'react';
+
 import {
   KeyboardAvoidingView,
   Platform,
@@ -5,13 +7,16 @@ import {
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import ScreenTitle from '../components/ScreenTitle';
 import { useCreateProduct } from '../hooks/useCreateProduct';
 import { authStyles as styles } from '../theme/authStyles';
 
@@ -51,6 +56,13 @@ export default function CreateProductScreen({
     handleCreateProduct,
   } = useCreateProduct();
 
+  const descriptionRef = useRef<TextInput>(null);
+  const priceRef = useRef<TextInput>(null);
+  const stockRef = useRef<TextInput>(null);
+  const imageUrlRef = useRef<TextInput>(null);
+
+  const errorStyle = errorMessage ? styles.inputError : undefined;
+
   async function onCreateProductPress() {
     const productWasCreated =
       await handleCreateProduct();
@@ -80,9 +92,9 @@ export default function CreateProductScreen({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.createProductHeader}>
-            <Text style={styles.createProductTitle}>
+            <ScreenTitle style={styles.createProductTitle}>
               Cadastrar produto
-            </Text>
+            </ScreenTitle>
 
             <Text
               style={styles.createProductSubtitle}
@@ -94,43 +106,32 @@ export default function CreateProductScreen({
 
           <View style={styles.createProductForm}>
             <View style={styles.productField}>
-              <Text style={styles.productFieldLabel}>
-                Nome
-              </Text>
-
-              <TextInput
-                style={[
-                  styles.input,
-                  errorMessage
-                    ? styles.inputError
-                    : undefined,
-                ]}
-                placeholder="Nome do produto"
-                placeholderTextColor="#64748B"
+              <AppTextField
+                label="Nome do produto"
+                style={errorStyle}
+                placeholder="Ração Premium Cães Adultos"
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="sentences"
                 autoCorrect
                 editable={!loading}
                 returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() =>
+                  descriptionRef.current?.focus()
+                }
               />
             </View>
 
             <View style={styles.productField}>
-              <Text style={styles.productFieldLabel}>
-                Descrição
-              </Text>
-
-              <TextInput
+              <AppTextField
+                ref={descriptionRef}
+                label="Descrição"
                 style={[
-                  styles.input,
                   styles.productDescriptionInput,
-                  errorMessage
-                    ? styles.inputError
-                    : undefined,
+                  errorStyle,
                 ]}
                 placeholder="Descrição do produto"
-                placeholderTextColor="#64748B"
                 value={description}
                 onChangeText={setDescription}
                 autoCapitalize="sentences"
@@ -146,70 +147,51 @@ export default function CreateProductScreen({
               <View
                 style={styles.productFieldHalf}
               >
-                <Text
-                  style={styles.productFieldLabel}
-                >
-                  Preço
-                </Text>
-
-                <TextInput
-                  style={[
-                    styles.input,
-                    errorMessage
-                      ? styles.inputError
-                      : undefined,
-                  ]}
-                  placeholder="Ex.: 49,90"
-                  placeholderTextColor="#64748B"
+                <AppTextField
+                  ref={priceRef}
+                  label="Preço (R$)"
+                  style={errorStyle}
+                  placeholder="49,90"
                   value={price}
                   onChangeText={setPrice}
                   keyboardType="decimal-pad"
                   editable={!loading}
                   returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() =>
+                    stockRef.current?.focus()
+                  }
                 />
               </View>
 
               <View
                 style={styles.productFieldHalf}
               >
-                <Text
-                  style={styles.productFieldLabel}
-                >
-                  Estoque
-                </Text>
-
-                <TextInput
-                  style={[
-                    styles.input,
-                    errorMessage
-                      ? styles.inputError
-                      : undefined,
-                  ]}
-                  placeholder="Ex.: 20"
-                  placeholderTextColor="#64748B"
+                <AppTextField
+                  ref={stockRef}
+                  label="Estoque"
+                  style={errorStyle}
+                  placeholder="20"
                   value={stock}
                   onChangeText={setStock}
                   keyboardType="number-pad"
                   editable={!loading}
                   returnKeyType="next"
+                  blurOnSubmit={false}
+                  onSubmitEditing={() =>
+                    imageUrlRef.current?.focus()
+                  }
                 />
               </View>
             </View>
 
             <View style={styles.productField}>
-              <Text style={styles.productFieldLabel}>
-                URL da imagem
-              </Text>
-
-              <TextInput
-                style={[
-                  styles.input,
-                  errorMessage
-                    ? styles.inputError
-                    : undefined,
-                ]}
+              <AppTextField
+                ref={imageUrlRef}
+                label="URL da imagem"
+                style={errorStyle}
                 placeholder="https://images.pexels.com/..."
-                placeholderTextColor="#64748B"
+                helperText="Use o endereço direto da imagem, começando com http:// ou https://."
                 value={imageUrl}
                 onChangeText={setImageUrl}
                 keyboardType="url"
@@ -221,11 +203,6 @@ export default function CreateProductScreen({
                   onCreateProductPress
                 }
               />
-
-              <Text style={styles.productFieldHelper}>
-                Use o endereço direto da imagem,
-                começando com http:// ou https://.
-              </Text>
             </View>
 
             <View style={styles.productField}>
@@ -234,6 +211,7 @@ export default function CreateProductScreen({
               </Text>
 
               <ChipGroup
+                groupLabel="Categoria"
                 options={categoryOptions}
                 selected={category}
                 onSelect={(value) =>
@@ -249,6 +227,7 @@ export default function CreateProductScreen({
               </Text>
 
               <ChipGroup
+                groupLabel="Espécie"
                 options={speciesOptions}
                 selected={species}
                 onSelect={setSpecies}
@@ -258,68 +237,34 @@ export default function CreateProductScreen({
               />
             </View>
 
-            {errorMessage ? (
-              <Text
-                style={styles.createProductErrorText}
-                accessibilityRole="alert"
-              >
-                {errorMessage}
-              </Text>
-            ) : null}
+            <FeedbackMessage
+              kind="error"
+              message={errorMessage}
+              style={styles.createProductErrorText}
+            />
 
-            {successMessage ? (
-              <Text
-                style={
-                  styles.createProductSuccessText
-                }
-                accessibilityRole="alert"
-              >
-                {successMessage}
-              </Text>
-            ) : null}
+            <FeedbackMessage
+              kind="success"
+              message={successMessage}
+              style={styles.createProductSuccessText}
+            />
 
-            <TouchableOpacity
-              style={[
-                styles.createProductSubmitButton,
-                loading
-                  ? styles.buttonDisabled
-                  : undefined,
-              ]}
-              activeOpacity={0.8}
-              disabled={loading}
+            <AppButton
+              size="large"
+              label="Cadastrar produto"
+              loading={loading}
+              loadingLabel="Cadastrando..."
+              style={styles.createProductSubmitButton}
               onPress={onCreateProductPress}
-              accessibilityRole="button"
-              accessibilityLabel="Cadastrar produto"
-              accessibilityState={{
-                disabled: loading,
-                busy: loading,
-              }}
-            >
-              <Text style={styles.buttonText}>
-                {loading
-                  ? 'Cadastrando...'
-                  : 'Cadastrar produto'}
-              </Text>
-            </TouchableOpacity>
+            />
 
-            <TouchableOpacity
-              style={
-                styles.createProductCancelButton
-              }
-              activeOpacity={0.7}
+            <AppButton
+              variant="link"
+              label="Cancelar"
               disabled={loading}
+              style={styles.createProductCancelButton}
               onPress={() => navigation.goBack()}
-              accessibilityRole="button"
-              accessibilityLabel="Cancelar cadastro e voltar"
-            >
-              <Text
-                style={
-                  styles.createProductCancelText
-                }
-              >
-                Cancelar
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

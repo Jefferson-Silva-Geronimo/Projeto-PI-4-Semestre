@@ -7,7 +7,6 @@ import {
   RefreshControl,
   SafeAreaView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -15,6 +14,8 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import FeedbackMessage from '../components/FeedbackMessage';
 import ListState from '../components/ListState';
 import ScreenHeader from '../components/ScreenHeader';
 import { useRemoteList } from '../hooks/useRemoteList';
@@ -73,63 +74,52 @@ export default function AdminServicesScreen({
   function renderService({ item }: { item: Service }) {
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
+        <Text style={styles.cardTitle} accessibilityRole="header">
+          {item.name}
+        </Text>
 
         <Text style={styles.cardText}>
           {item.durationMinutes} min ·{' '}
           {item.active ? 'Ativo' : 'Inativo'}
         </Text>
 
-        <Text style={styles.cardPrice}>
+        <Text
+          style={styles.cardPrice}
+          accessibilityLabel={`Preços: pequeno ${formatCurrency(
+            item.priceSmallInCents,
+          )}, médio ${formatCurrency(
+            item.priceMediumInCents,
+          )}, grande ${formatCurrency(item.priceLargeInCents)}`}
+        >
           P {formatCurrency(item.priceSmallInCents)} · M{' '}
           {formatCurrency(item.priceMediumInCents)} · G{' '}
           {formatCurrency(item.priceLargeInCents)}
         </Text>
 
         <View style={styles.row}>
-          <TouchableOpacity
-            style={styles.outlineButton}
-            activeOpacity={0.8}
+          <AppButton
+            variant="outline"
+            label="Editar"
+            accessibilityLabel={`Editar ${item.name}`}
             onPress={() =>
               navigation.navigate('ServiceForm', {
                 serviceId: item.id,
               })
             }
-            accessibilityRole="button"
-            accessibilityLabel={`Editar ${item.name}`}
-          >
-            <Text style={styles.outlineButtonText}>
-              Editar
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={
-              item.active
-                ? styles.dangerButton
-                : styles.outlineButton
-            }
-            activeOpacity={0.8}
-            onPress={() => {
-              void handleToggle(item);
-            }}
-            accessibilityRole="button"
+          <AppButton
+            variant={item.active ? 'danger' : 'outline'}
+            label={item.active ? 'Inativar' : 'Ativar'}
             accessibilityLabel={
               item.active
                 ? `Inativar ${item.name}`
                 : `Ativar ${item.name}`
             }
-          >
-            <Text
-              style={
-                item.active
-                  ? styles.dangerButtonText
-                  : styles.outlineButtonText
-              }
-            >
-              {item.active ? 'Inativar' : 'Ativar'}
-            </Text>
-          </TouchableOpacity>
+            onPress={() => {
+              void handleToggle(item);
+            }}
+          />
         </View>
       </View>
     );
@@ -171,12 +161,11 @@ export default function AdminServicesScreen({
           }
           ListHeaderComponent={
             actionError ? (
-              <Text
+              <FeedbackMessage
+                kind="error"
+                message={actionError}
                 style={styles.errorText}
-                accessibilityRole="alert"
-              >
-                {actionError}
-              </Text>
+              />
             ) : null
           }
           ListEmptyComponent={

@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Alert,
   Image,
   RefreshControl,
@@ -7,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -15,6 +13,11 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useAdminOrderDetails } from '../hooks/useAdminOrderDetails';
 
 import type {
@@ -76,8 +79,7 @@ export default function AdminOrderDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator size="large" color="#2D6CDF" />
-          <Text style={styles.feedbackText}>Carregando pedido...</Text>
+          <LoadingIndicator message="Carregando pedido..." />
         </View>
       </SafeAreaView>
     );
@@ -87,15 +89,18 @@ export default function AdminOrderDetailsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text style={styles.errorText} accessibilityRole="alert">
-            {errorMessage}
-          </Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => void loadOrder()}>
-            <Text style={styles.primaryButtonText}>Tentar novamente</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.secondaryButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.secondaryButtonText}>Voltar</Text>
-          </TouchableOpacity>
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.errorText}
+          />
+          <AppButton label="Tentar novamente" onPress={() => void loadOrder()} />
+          <AppButton
+            variant="outline"
+            label="Voltar"
+            style={{ marginTop: 8 }}
+            onPress={() => navigation.goBack()}
+          />
         </View>
       </SafeAreaView>
     );
@@ -112,9 +117,11 @@ export default function AdminOrderDetailsScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>‹ Pedidos</Text>
-        </TouchableOpacity>
+        <BackButton
+          label="Pedidos"
+          accessibilityLabel="Voltar para Pedidos"
+          onPress={() => navigation.goBack()}
+        />
         <Text style={styles.headerTitle}>Detalhes do pedido</Text>
         <View style={styles.headerSpacer} />
       </View>
@@ -131,9 +138,9 @@ export default function AdminOrderDetailsScreen({
         }
       >
         <View style={styles.summaryCard}>
-          <Text style={styles.orderCode}>
-            Pedido #{order.id.slice(0, 8).toUpperCase()}
-          </Text>
+          <ScreenTitle style={styles.orderCode}>
+            {`Pedido #${order.id.slice(0, 8).toUpperCase()}`}
+          </ScreenTitle>
           <Text style={styles.customerName}>{order.user.name}</Text>
           <Text style={styles.customerEmail}>{order.user.email}</Text>
           <Text style={styles.orderDate}>
@@ -142,11 +149,18 @@ export default function AdminOrderDetailsScreen({
           <Text style={styles.status}>{statusLabels[order.status]}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Produtos</Text>
+        <Text style={styles.sectionTitle} accessibilityRole="header">
+          Produtos
+        </Text>
 
         {order.items.map((item) => (
           <View key={item.id} style={styles.itemCard}>
-            <Image source={{ uri: item.imageUrl }} style={styles.itemImage} />
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={styles.itemImage}
+              accessible={false}
+              importantForAccessibility="no"
+            />
             <View style={styles.itemInformation}>
               <Text style={styles.itemName}>{item.productName}</Text>
               <Text style={styles.itemDetails}>
@@ -164,41 +178,42 @@ export default function AdminOrderDetailsScreen({
           <Text style={styles.totalValue}>{formatCurrency(order.totalInCents)}</Text>
         </View>
 
-        {errorMessage ? (
-          <Text style={styles.inlineErrorText} accessibilityRole="alert">
-            {errorMessage}
-          </Text>
-        ) : null}
+        <FeedbackMessage
+          kind="error"
+          message={errorMessage}
+          style={styles.inlineErrorText}
+        />
 
         <View style={styles.actions}>
           {canProcess ? (
-            <TouchableOpacity
-              style={styles.primaryAction}
+            <AppButton
+              size="large"
+              label="Iniciar processamento"
               disabled={updating}
+              style={styles.action}
               onPress={() => confirmStatus('PROCESSING')}
-            >
-              <Text style={styles.actionText}>Iniciar processamento</Text>
-            </TouchableOpacity>
+            />
           ) : null}
 
           {canComplete ? (
-            <TouchableOpacity
-              style={styles.completeAction}
+            <AppButton
+              size="large"
+              label="Concluir pedido"
               disabled={updating}
+              style={styles.action}
               onPress={() => confirmStatus('COMPLETED')}
-            >
-              <Text style={styles.actionText}>Concluir pedido</Text>
-            </TouchableOpacity>
+            />
           ) : null}
 
           {canCancel ? (
-            <TouchableOpacity
-              style={styles.cancelAction}
+            <AppButton
+              size="large"
+              variant="danger"
+              label="Cancelar pedido"
               disabled={updating}
+              style={styles.action}
               onPress={() => confirmStatus('CANCELLED')}
-            >
-              <Text style={styles.actionText}>Cancelar pedido</Text>
-            </TouchableOpacity>
+            />
           ) : null}
         </View>
       </ScrollView>
@@ -209,7 +224,6 @@ export default function AdminOrderDetailsScreen({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
   header: { minHeight: 64, paddingHorizontal: 20, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  backText: { color: '#2D6CDF', fontSize: 16, fontWeight: '600' },
   headerTitle: { color: '#1E293B', fontSize: 18, fontWeight: '700' },
   headerSpacer: { width: 58 },
   content: { width: '100%', maxWidth: 720, alignSelf: 'center', padding: 20, paddingBottom: 40 },
@@ -229,17 +243,9 @@ const styles = StyleSheet.create({
   totalCard: { padding: 20, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 },
   totalLabel: { color: '#1E293B', fontSize: 17, fontWeight: '700' },
   totalValue: { color: '#2D6CDF', fontSize: 22, fontWeight: '700' },
-  inlineErrorText: { color: '#DC2626', fontSize: 14, lineHeight: 20, marginTop: 18 },
+  inlineErrorText: { marginTop: 18 },
   actions: { marginTop: 22 },
-  primaryAction: { height: 54, borderRadius: 12, backgroundColor: '#2D6CDF', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  completeAction: { height: 54, borderRadius: 12, backgroundColor: '#15803D', alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  cancelAction: { height: 54, borderRadius: 12, backgroundColor: '#DC2626', alignItems: 'center', justifyContent: 'center' },
-  actionText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
+  action: { marginBottom: 10 },
   centeredContent: { flex: 1, paddingHorizontal: 24, alignItems: 'center', justifyContent: 'center' },
-  feedbackText: { color: '#475569', fontSize: 16, marginTop: 18 },
-  errorText: { color: '#DC2626', fontSize: 15, lineHeight: 23, textAlign: 'center', marginBottom: 20 },
-  primaryButton: { height: 50, paddingHorizontal: 24, borderRadius: 12, backgroundColor: '#2D6CDF', alignItems: 'center', justifyContent: 'center' },
-  primaryButtonText: { color: '#FFFFFF', fontSize: 15, fontWeight: '600' },
-  secondaryButton: { height: 48, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
-  secondaryButtonText: { color: '#2D6CDF', fontSize: 15, fontWeight: '600' },
+  errorText: { fontSize: 15, lineHeight: 23, textAlign: 'center', marginBottom: 20 },
 });

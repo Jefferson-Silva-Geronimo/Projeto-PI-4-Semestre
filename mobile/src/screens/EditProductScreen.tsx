@@ -1,5 +1,6 @@
+import { useRef } from 'react';
+
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -15,8 +16,15 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
+import BackButton from '../components/BackButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useEditProduct } from '../hooks/useEditProduct';
+import { sizes } from '../theme/tokens';
 
 import type {
   AdminStackParamList,
@@ -65,6 +73,11 @@ export default function EditProductScreen({
     productId,
   });
 
+  const descriptionRef = useRef<TextInput>(null);
+  const priceRef = useRef<TextInput>(null);
+  const stockRef = useRef<TextInput>(null);
+  const imageUrlRef = useRef<TextInput>(null);
+
   async function handleSave(): Promise<void> {
     const saved = await saveProduct();
 
@@ -77,14 +90,7 @@ export default function EditProductScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando produto...
-          </Text>
+          <LoadingIndicator message="Carregando produto..." />
         </View>
       </SafeAreaView>
     );
@@ -94,34 +100,25 @@ export default function EditProductScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadProduct();
             }}
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="outline"
+            label="Voltar"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.secondaryButtonText}>
-              Voltar
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -138,50 +135,39 @@ export default function EditProductScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <TouchableOpacity
-            activeOpacity={0.7}
-            disabled={saving}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backText}>
-              ‹ Voltar
-            </Text>
-          </TouchableOpacity>
+          <BackButton onPress={() => navigation.goBack()} />
 
-          <Text style={styles.title}>
+          <ScreenTitle style={styles.title}>
             Editar produto
-          </Text>
+          </ScreenTitle>
 
           <Text style={styles.subtitle}>
             Atualize as informações do produto selecionado.
           </Text>
 
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Nome
-            </Text>
-
-            <TextInput
-              style={styles.input}
+            <AppTextField
+              label="Nome do produto"
               value={name}
               onChangeText={setName}
-              placeholder="Nome do produto"
-              placeholderTextColor="#64748B"
+              placeholder="Ração Premium Cães Adultos"
               editable={!saving}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() =>
+                descriptionRef.current?.focus()
+              }
             />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>
-              Descrição
-            </Text>
-
-            <TextInput
-              style={[styles.input, styles.descriptionInput]}
+            <AppTextField
+              ref={descriptionRef}
+              label="Descrição"
+              style={styles.descriptionInput}
               value={description}
               onChangeText={setDescription}
               placeholder="Descrição do produto"
-              placeholderTextColor="#64748B"
               editable={!saving}
               multiline
               numberOfLines={5}
@@ -191,53 +177,52 @@ export default function EditProductScreen({
 
           <View style={styles.row}>
             <View style={styles.halfFieldLeft}>
-              <Text style={styles.label}>
-                Preço
-              </Text>
-
-              <TextInput
-                style={styles.input}
+              <AppTextField
+                ref={priceRef}
+                label="Preço (R$)"
                 value={price}
                 onChangeText={setPrice}
                 placeholder="49,90"
-                placeholderTextColor="#64748B"
                 keyboardType="decimal-pad"
                 editable={!saving}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() =>
+                  stockRef.current?.focus()
+                }
               />
             </View>
 
             <View style={styles.halfFieldRight}>
-              <Text style={styles.label}>
-                Estoque
-              </Text>
-
-              <TextInput
-                style={styles.input}
+              <AppTextField
+                ref={stockRef}
+                label="Estoque"
                 value={stock}
                 onChangeText={setStock}
                 placeholder="20"
-                placeholderTextColor="#64748B"
                 keyboardType="number-pad"
                 editable={!saving}
+                returnKeyType="next"
+                blurOnSubmit={false}
+                onSubmitEditing={() =>
+                  imageUrlRef.current?.focus()
+                }
               />
             </View>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>
-              URL da imagem
-            </Text>
-
-            <TextInput
-              style={styles.input}
+            <AppTextField
+              ref={imageUrlRef}
+              label="URL da imagem"
               value={imageUrl}
               onChangeText={setImageUrl}
               placeholder="https://..."
-              placeholderTextColor="#64748B"
               keyboardType="url"
               autoCapitalize="none"
               autoCorrect={false}
               editable={!saving}
+              returnKeyType="done"
             />
           </View>
 
@@ -247,6 +232,7 @@ export default function EditProductScreen({
             </Text>
 
             <ChipGroup
+              groupLabel="Categoria"
               options={categoryOptions}
               selected={category}
               onSelect={(value) =>
@@ -262,6 +248,7 @@ export default function EditProductScreen({
             </Text>
 
             <ChipGroup
+              groupLabel="Espécie"
               options={speciesOptions}
               selected={species}
               onSelect={setSpecies}
@@ -293,6 +280,9 @@ export default function EditProductScreen({
               disabled={saving}
               onPress={() => setActive(!active)}
               accessibilityRole="switch"
+              accessibilityLabel={`Situação do produto: ${
+                active ? 'Ativo' : 'Inativo'
+              }`}
               accessibilityState={{
                 checked: active,
                 disabled: saving,
@@ -304,56 +294,36 @@ export default function EditProductScreen({
             </TouchableOpacity>
           </View>
 
-          {errorMessage ? (
-            <Text
-              style={styles.formErrorText}
-              accessibilityRole="alert"
-            >
-              {errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.formErrorText}
+          />
 
-          {successMessage ? (
-            <Text
-              style={styles.successText}
-              accessibilityRole="alert"
-            >
-              {successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={successMessage}
+            style={styles.successText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.saveButton,
-              saving ? styles.disabledButton : undefined,
-            ]}
-            activeOpacity={0.8}
-            disabled={saving}
+          <AppButton
+            size="large"
+            label="Salvar alterações"
+            loading={saving}
+            loadingLabel="Salvando..."
+            style={styles.saveButton}
             onPress={() => {
               void handleSave();
             }}
-            accessibilityRole="button"
-            accessibilityLabel="Salvar alterações do produto"
-            accessibilityState={{
-              disabled: saving,
-              busy: saving,
-            }}
-          >
-            <Text style={styles.saveButtonText}>
-              {saving ? 'Salvando...' : 'Salvar alterações'}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.cancelButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Cancelar"
             disabled={saving}
+            style={styles.cancelButton}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.cancelButtonText}>
-              Cancelar
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -374,12 +344,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 20,
     paddingBottom: 40,
-  },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 20,
   },
   title: {
     color: '#1E293B',
@@ -402,19 +366,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  input: {
-    width: '100%',
-    height: 56,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    color: '#1E293B',
-    backgroundColor: '#FFFFFF',
-    fontSize: 16,
-  },
   descriptionInput: {
-    height: 126,
+    minHeight: 126,
     paddingTop: 16,
     paddingBottom: 16,
   },
@@ -457,7 +410,7 @@ const styles = StyleSheet.create({
   },
   statusToggle: {
     minWidth: 82,
-    height: 40,
+    minHeight: sizes.minTouch,
     paddingHorizontal: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -475,44 +428,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   formErrorText: {
-    color: '#DC2626',
-    fontSize: 14,
-    lineHeight: 20,
     marginBottom: 16,
   },
   successText: {
-    color: '#15803D',
-    fontSize: 14,
-    lineHeight: 20,
     marginBottom: 16,
   },
   saveButton: {
     width: '100%',
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  disabledButton: {
-    opacity: 0.65,
   },
   cancelButton: {
     width: '100%',
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: 8,
-  },
-  cancelButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
   centeredContent: {
     flex: 1,
@@ -520,41 +446,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
-    color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });
