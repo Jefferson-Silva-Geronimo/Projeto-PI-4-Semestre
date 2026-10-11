@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Image,
   SafeAreaView,
   ScrollView,
@@ -13,7 +12,12 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import BackButton from '../components/BackButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import { useCheckout } from '../hooks/useCheckout';
+import { colors } from '../theme/tokens';
 
 import type {
   ClientStackParamList,
@@ -52,18 +56,16 @@ export default function CheckoutScreen({
     });
   }
 
+  const confirmDisabled =
+    submitting ||
+    cart.items.length === 0 ||
+    cart.hasUnavailableItems;
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Preparando o resumo do pedido...
-          </Text>
+          <LoadingIndicator message="Preparando o resumo do pedido..." />
         </View>
       </SafeAreaView>
     );
@@ -73,12 +75,11 @@ export default function CheckoutScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
           <TouchableOpacity
             style={styles.primaryButton}
@@ -87,7 +88,6 @@ export default function CheckoutScreen({
               void reloadCart();
             }}
             accessibilityRole="button"
-            accessibilityLabel="Tentar carregar o resumo novamente"
           >
             <Text style={styles.primaryButtonText}>
               Tentar novamente
@@ -99,7 +99,6 @@ export default function CheckoutScreen({
             activeOpacity={0.7}
             onPress={() => navigation.goBack()}
             accessibilityRole="button"
-            accessibilityLabel="Voltar ao carrinho"
           >
             <Text style={styles.secondaryButtonText}>
               Voltar ao carrinho
@@ -113,21 +112,14 @@ export default function CheckoutScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          disabled={submitting}
+        <BackButton
           onPress={() => navigation.goBack()}
-          accessibilityRole="button"
           accessibilityLabel="Voltar ao carrinho"
-        >
-          <Text style={styles.backText}>
-            ‹ Voltar
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <Text style={styles.headerTitle}>
+        <ScreenTitle style={styles.headerTitle}>
           Resumo do pedido
-        </Text>
+        </ScreenTitle>
 
         <View style={styles.headerSpacer} />
       </View>
@@ -155,7 +147,8 @@ export default function CheckoutScreen({
               }}
               style={styles.itemImage}
               resizeMode="cover"
-              accessibilityLabel={`Imagem do produto ${item.product.name}`}
+              accessible={false}
+              importantForAccessibility="no"
             />
 
             <View style={styles.itemInformation}>
@@ -212,44 +205,36 @@ export default function CheckoutScreen({
           </Text>
         </View>
 
-        {errorMessage ? (
-          <Text
-            style={styles.inlineErrorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
-        ) : null}
+        <FeedbackMessage
+          kind="error"
+          message={errorMessage}
+          style={styles.inlineErrorText}
+        />
 
         <TouchableOpacity
           style={[
             styles.confirmButton,
-            submitting ||
-            cart.items.length === 0 ||
-            cart.hasUnavailableItems
-              ? styles.disabledButton
-              : undefined,
+            confirmDisabled ? styles.disabledButton : undefined,
           ]}
           activeOpacity={0.8}
-          disabled={
-            submitting ||
-            cart.items.length === 0 ||
-            cart.hasUnavailableItems
-          }
+          disabled={confirmDisabled}
           onPress={() => {
             void handleStartCheckout();
           }}
           accessibilityRole="button"
           accessibilityLabel="Ir para pagamento"
+          accessibilityHint="Abre o Mercado Pago para concluir o pagamento."
           accessibilityState={{
-            disabled:
-              submitting ||
-              cart.items.length === 0 ||
-              cart.hasUnavailableItems,
+            disabled: confirmDisabled,
             busy: submitting,
           }}
         >
-          <Text style={styles.confirmButtonText}>
+          <Text
+            style={[
+              styles.confirmButtonText,
+              confirmDisabled ? styles.disabledButtonText : undefined,
+            ]}
+          >
             {submitting
               ? 'Abrindo pagamento...'
               : 'Ir para pagamento'}
@@ -274,11 +259,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 16,
-    fontWeight: '600',
   },
   headerTitle: {
     color: '#1E293B',
@@ -407,7 +387,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     width: '100%',
-    height: 56,
+    minHeight: 56,
     marginTop: 22,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -420,20 +400,16 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   disabledButton: {
-    backgroundColor: '#94A3B8',
-    opacity: 0.7,
+    backgroundColor: colors.disabledBackground,
+  },
+  disabledButtonText: {
+    color: colors.disabledText,
   },
   centeredContent: {
     flex: 1,
     paddingHorizontal: 24,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-    textAlign: 'center',
   },
   errorText: {
     color: '#DC2626',
@@ -443,7 +419,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   primaryButton: {
-    height: 50,
+    minHeight: 50,
     paddingHorizontal: 24,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -456,7 +432,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   secondaryButton: {
-    height: 48,
+    minHeight: 48,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',

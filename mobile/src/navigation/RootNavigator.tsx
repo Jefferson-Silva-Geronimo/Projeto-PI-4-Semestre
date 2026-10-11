@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -8,6 +7,7 @@ import {
 
 import { NavigationContainer } from '@react-navigation/native';
 
+import LoadingIndicator from '../components/LoadingIndicator';
 import { useAuth } from '../hooks/useAuth';
 
 import AuthNavigator from './AuthNavigator';
@@ -18,18 +18,11 @@ function SessionLoadingScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.logo}>
+        <Text style={styles.logo} accessibilityRole="header">
           PETSHOP
         </Text>
 
-        <ActivityIndicator
-          size="large"
-          color="#2D6CDF"
-        />
-
-        <Text style={styles.message}>
-          Verificando sua sessão...
-        </Text>
+        <LoadingIndicator message="Verificando sua sessão..." />
       </View>
     </SafeAreaView>
   );
@@ -77,11 +70,5 @@ const styles = StyleSheet.create({
     color: '#2D6CDF',
     fontSize: 32,
     fontWeight: '700',
-  },
-
-  message: {
-    color: '#475569',
-    fontSize: 16,
-    textAlign: 'center',
   },
 });

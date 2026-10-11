@@ -1,66 +1,71 @@
-import { useState } from 'react';
+import { forwardRef, useState } from 'react';
 
 import {
+  AccessibilityInfo,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  type TextInputProps,
 } from 'react-native';
 
-import { authStyles } from '../theme/authStyles';
+import { colors, sizes } from '../theme/tokens';
 
-export default function PasswordInput({
-  style,
-  ...props
-}: Omit<TextInputProps, 'secureTextEntry'>) {
+import AppTextField, { type AppTextFieldProps } from './AppTextField';
+
+type PasswordInputProps = Omit<
+  AppTextFieldProps,
+  'secureTextEntry' | 'rightAccessory'
+>;
+
+const PasswordInput = forwardRef<TextInput, PasswordInputProps>(
+  function PasswordInput(props, ref) {
   const [visible, setVisible] = useState(false);
 
-  return (
-    <View style={styles.container}>
-      <TextInput
-        {...props}
-        style={[authStyles.input, style, styles.input]}
-        placeholderTextColor="#64748B"
-        secureTextEntry={!visible}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
+  const toggle = () => {
+    const next = !visible;
 
-      <TouchableOpacity
-        style={styles.toggle}
-        activeOpacity={0.7}
-        onPress={() => setVisible((current) => !current)}
-        accessibilityRole="button"
-        accessibilityLabel={
-          visible ? 'Ocultar senha' : 'Mostrar senha'
-        }
-      >
-        <Text style={styles.toggleText}>
-          {visible ? 'Ocultar' : 'Mostrar'}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    setVisible(next);
+    AccessibilityInfo.announceForAccessibility(
+      next ? 'Senha visível' : 'Senha oculta',
+    );
+  };
+
+  return (
+    <AppTextField
+      ref={ref}
+      {...props}
+      secureTextEntry={!visible}
+      autoCapitalize="none"
+      autoCorrect={false}
+      rightAccessory={
+        <TouchableOpacity
+          style={styles.toggle}
+          activeOpacity={0.7}
+          onPress={toggle}
+          accessibilityRole="button"
+          accessibilityLabel={visible ? 'Ocultar senha' : 'Mostrar senha'}
+        >
+          <Text style={styles.toggleText}>
+            {visible ? 'Ocultar' : 'Mostrar'}
+          </Text>
+        </TouchableOpacity>
+      }
+    />
   );
-}
+});
+
+export default PasswordInput;
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    justifyContent: 'center',
-  },
-  input: {
-    paddingRight: 88,
-  },
   toggle: {
-    position: 'absolute',
-    right: 16,
-    height: 56,
+    minWidth: 72,
+    minHeight: sizes.minTouch,
+    alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 12,
   },
   toggleText: {
-    color: '#2D6CDF',
+    color: colors.primary,
     fontSize: 14,
     fontWeight: '600',
   },

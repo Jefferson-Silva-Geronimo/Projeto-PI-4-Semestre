@@ -1,10 +1,8 @@
 import {
-  ActivityIndicator,
   Alert,
   SafeAreaView,
   ScrollView,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -12,12 +10,19 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import ScreenHeader from '../components/ScreenHeader';
 import { bookingDays, useBooking } from '../hooks/useBooking';
 import { commonStyles as styles } from '../theme/commonStyles';
 import { formatCurrency } from '../utils/currency';
-import { formatDateKey, formatTime } from '../utils/date';
+import {
+  formatDateKey,
+  formatDateKeyLong,
+  formatTime,
+} from '../utils/date';
 
 import type { ClientStackParamList } from '../types/navigation';
 import { getServicePrice } from '../types/service';
@@ -52,7 +57,7 @@ export default function BookAppointmentScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#2D6CDF" />
+          <LoadingIndicator />
         </View>
       </SafeAreaView>
     );
@@ -67,9 +72,11 @@ export default function BookAppointmentScreen({
         />
 
         <View style={styles.centered}>
-          <Text style={styles.errorText}>
-            {booking.errorMessage || 'Serviço não encontrado.'}
-          </Text>
+          <FeedbackMessage
+            kind="error"
+            message={booking.errorMessage || 'Serviço não encontrado.'}
+            style={styles.errorText}
+          />
         </View>
       </SafeAreaView>
     );
@@ -92,15 +99,10 @@ export default function BookAppointmentScreen({
             Para agendar, precisamos saber quem será atendido.
           </Text>
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Adicionar pet"
             onPress={() => navigation.navigate('PetForm', {})}
-          >
-            <Text style={styles.primaryButtonText}>
-              Adicionar pet
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -123,9 +125,12 @@ export default function BookAppointmentScreen({
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text style={styles.label}>Pet</Text>
+          <Text style={styles.label} accessibilityRole="header">
+            Pet
+          </Text>
 
           <ChipGroup
+            groupLabel="Pet"
             options={booking.pets.map((item) => ({
               value: item.id,
               label: item.name,
@@ -136,12 +141,16 @@ export default function BookAppointmentScreen({
         </View>
 
         <View>
-          <Text style={styles.label}>Data</Text>
+          <Text style={styles.label} accessibilityRole="header">
+            Data
+          </Text>
 
           <ChipGroup
+            groupLabel="Data"
             options={bookingDays.map((day) => ({
               value: day,
               label: formatDateKey(day),
+              accessibilityLabel: formatDateKeyLong(day),
             }))}
             selected={booking.date}
             onSelect={(value) =>
@@ -151,16 +160,25 @@ export default function BookAppointmentScreen({
         </View>
 
         <View>
-          <Text style={styles.label}>Horário</Text>
+          <Text style={styles.label} accessibilityRole="header">
+            Horário
+          </Text>
 
           {booking.loadingSlots ? (
-            <ActivityIndicator color="#2D6CDF" />
+            <LoadingIndicator
+              size="small"
+              message="Carregando horários..."
+            />
           ) : booking.slots.length === 0 ? (
-            <Text style={styles.helper}>
+            <Text
+              style={styles.helper}
+              accessibilityLiveRegion="polite"
+            >
               Nenhum horário livre nesta data.
             </Text>
           ) : (
             <ChipGroup
+              groupLabel="Horário"
               options={booking.slots.map((value) => ({
                 value,
                 label: formatTime(value),
@@ -171,7 +189,11 @@ export default function BookAppointmentScreen({
           )}
         </View>
 
-        <View style={styles.card}>
+        <View
+          style={styles.card}
+          accessible
+          accessibilityLabel={`Resumo: ${booking.service.name} para ${pet?.name}, ${price}. Pagamento no atendimento, na loja.`}
+        >
           <Text style={styles.cardTitle}>Resumo</Text>
 
           <Text style={styles.cardText}>
@@ -185,35 +207,22 @@ export default function BookAppointmentScreen({
           </Text>
         </View>
 
-        {booking.errorMessage ? (
-          <Text
-            style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {booking.errorMessage}
-          </Text>
-        ) : null}
+        <FeedbackMessage
+          kind="error"
+          message={booking.errorMessage}
+          style={styles.errorText}
+        />
 
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            booking.submitting || !booking.slot
-              ? styles.disabled
-              : undefined,
-          ]}
-          activeOpacity={0.8}
-          disabled={booking.submitting || !booking.slot}
+        <AppButton
+          size="large"
+          label="Confirmar agendamento"
+          loading={booking.submitting}
+          loadingLabel="Agendando..."
+          disabled={!booking.slot}
           onPress={() => {
             void handleSubmit();
           }}
-          accessibilityRole="button"
-        >
-          <Text style={styles.primaryButtonText}>
-            {booking.submitting
-              ? 'Agendando...'
-              : 'Confirmar agendamento'}
-          </Text>
-        </TouchableOpacity>
+        />
       </ScrollView>
     </SafeAreaView>
   );

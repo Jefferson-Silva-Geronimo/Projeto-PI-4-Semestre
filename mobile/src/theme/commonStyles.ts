@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
 
+import { colors, sizes } from './tokens';
+
 export const commonStyles = StyleSheet.create({
   container: {
     flex: 1,
@@ -17,7 +19,6 @@ export const commonStyles = StyleSheet.create({
     color: '#2D6CDF',
     fontSize: 15,
     fontWeight: '600',
-    marginBottom: 14,
   },
   title: {
     color: '#1E293B',
@@ -101,7 +102,7 @@ export const commonStyles = StyleSheet.create({
     textAlign: 'center',
   },
   primaryButton: {
-    height: 48,
+    minHeight: sizes.minTouch,
     paddingHorizontal: 20,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -114,7 +115,7 @@ export const commonStyles = StyleSheet.create({
     fontWeight: '700',
   },
   outlineButton: {
-    height: 40,
+    minHeight: sizes.minTouch,
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
@@ -128,7 +129,7 @@ export const commonStyles = StyleSheet.create({
     fontWeight: '700',
   },
   dangerButton: {
-    height: 40,
+    minHeight: sizes.minTouch,
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
@@ -148,6 +149,13 @@ export const commonStyles = StyleSheet.create({
     marginTop: 8,
   },
   disabled: {
-    opacity: 0.6,
+    backgroundColor: colors.disabledBackground,
+  },
+  disabledText: {
+    color: colors.disabledText,
+  },
+  disabledOutline: {
+    borderColor: colors.disabledBorder,
+    backgroundColor: 'transparent',
   },
 });

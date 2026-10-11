@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
@@ -15,7 +14,12 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import BackButton from '../components/BackButton';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
+import ScreenTitle from '../components/ScreenTitle';
 import {
   useAdminProducts,
   type ProductStatusFilter,
@@ -137,7 +141,8 @@ export default function AdminProductsScreen({
           }}
           style={styles.productImage}
           resizeMode="cover"
-          accessibilityLabel={`Imagem do produto ${item.name}`}
+          accessible={false}
+          importantForAccessibility="no"
         />
 
         <View style={styles.productInformation}>
@@ -199,9 +204,11 @@ export default function AdminProductsScreen({
               }}
               accessibilityRole="button"
               accessibilityLabel={
-                item.active
-                  ? `Inativar ${item.name}`
-                  : `Reativar ${item.name}`
+                processing
+                  ? `Aguarde... atualizando ${item.name}`
+                  : item.active
+                    ? `Inativar ${item.name}`
+                    : `Reativar ${item.name}`
               }
               accessibilityState={{
                 disabled: processing,
@@ -241,14 +248,7 @@ export default function AdminProductsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <ActivityIndicator
-            size="large"
-            color="#2D6CDF"
-          />
-
-          <Text style={styles.feedbackText}>
-            Carregando produtos...
-          </Text>
+          <LoadingIndicator message="Carregando produtos..." />
         </View>
       </SafeAreaView>
     );
@@ -263,34 +263,25 @@ export default function AdminProductsScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centeredContent}>
-          <Text
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
             style={styles.errorText}
-            accessibilityRole="alert"
-          >
-            {errorMessage}
-          </Text>
+          />
 
-          <TouchableOpacity
-            style={styles.primaryButton}
-            activeOpacity={0.8}
+          <AppButton
+            label="Tentar novamente"
             onPress={() => {
               void loadProducts();
             }}
-          >
-            <Text style={styles.primaryButtonText}>
-              Tentar novamente
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            activeOpacity={0.7}
+          <AppButton
+            variant="outline"
+            label="Voltar"
+            style={{ marginTop: 8 }}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.secondaryButtonText}>
-              Voltar
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </SafeAreaView>
     );
@@ -299,19 +290,12 @@ export default function AdminProductsScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backText}>
-            ‹ Voltar
-          </Text>
-        </TouchableOpacity>
+        <BackButton onPress={() => navigation.goBack()} />
 
         <View style={styles.headerInformation}>
-          <Text style={styles.title}>
+          <ScreenTitle style={styles.title}>
             Produtos
-          </Text>
+          </ScreenTitle>
 
           <Text style={styles.subtitle}>
             Gerencie o catálogo do pet shop.
@@ -323,7 +307,7 @@ export default function AdminProductsScreen({
           activeOpacity={0.8}
           onPress={() => navigation.navigate('CreateProduct')}
           accessibilityRole="button"
-          accessibilityLabel="Cadastrar novo produto"
+          accessibilityLabel="Novo produto"
         >
           <Text style={styles.createButtonText}>
             Novo
@@ -338,9 +322,12 @@ export default function AdminProductsScreen({
           onChangeText={setSearch}
           autoCorrect={false}
           returnKeyType="search"
+          accessibilityLabel="Buscar produto"
+          accessibilityRole="search"
         />
 
         <ChipGroup<ProductStatusFilter>
+          groupLabel="Filtrar produtos por situação"
           options={statusOptions}
           selected={statusFilter}
           onSelect={(value) =>
@@ -374,12 +361,11 @@ export default function AdminProductsScreen({
         }
         ListHeaderComponent={
           statusErrorMessage || errorMessage ? (
-            <Text
+            <FeedbackMessage
+              kind="error"
+              message={statusErrorMessage || errorMessage}
               style={styles.inlineErrorText}
-              accessibilityRole="alert"
-            >
-              {statusErrorMessage || errorMessage}
-            </Text>
+            />
           ) : null
         }
         ListEmptyComponent={
@@ -421,12 +407,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E2E8F0',
   },
-  backText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
-    marginBottom: 14,
-  },
   headerInformation: {
     marginBottom: 14,
   },
@@ -441,7 +421,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   createButton: {
-    height: 46,
+    minHeight: 48,
     paddingHorizontal: 18,
     borderRadius: 12,
     backgroundColor: '#2D6CDF',
@@ -455,9 +435,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   searchInput: {
-    height: 46,
+    minHeight: 48,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
+    borderColor: '#738298',
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 15,
@@ -467,7 +447,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   deleteButton: {
-    height: 40,
+    minHeight: 48,
     paddingHorizontal: 14,
     borderRadius: 10,
     borderWidth: 1,
@@ -550,7 +530,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     minWidth: 82,
-    height: 38,
+    minHeight: 48,
     paddingHorizontal: 14,
     borderRadius: 10,
     backgroundColor: '#2D6CDF',
@@ -565,7 +545,7 @@ const styles = StyleSheet.create({
   },
   statusButton: {
     minWidth: 90,
-    height: 38,
+    minHeight: 48,
     paddingHorizontal: 14,
     borderRadius: 10,
     alignItems: 'center',
@@ -616,41 +596,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedbackText: {
-    color: '#475569',
-    fontSize: 16,
-    marginTop: 18,
-  },
   errorText: {
     color: '#DC2626',
     fontSize: 15,
     lineHeight: 23,
     textAlign: 'center',
     marginBottom: 20,
-  },
-  primaryButton: {
-    height: 50,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    backgroundColor: '#2D6CDF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    height: 48,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  secondaryButtonText: {
-    color: '#2D6CDF',
-    fontSize: 15,
-    fontWeight: '600',
   },
 });

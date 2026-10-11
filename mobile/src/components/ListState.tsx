@@ -1,11 +1,10 @@
-import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 
 import { commonStyles as styles } from '../theme/commonStyles';
+
+import AppButton from './AppButton';
+import FeedbackMessage from './FeedbackMessage';
+import LoadingIndicator from './LoadingIndicator';
 
 interface ListStateProps {
   loading: boolean;
@@ -21,29 +20,20 @@ export default function ListState({
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2D6CDF" />
+        <LoadingIndicator showMessage={false} />
       </View>
     );
   }
 
   return (
     <View style={styles.centered}>
-      <Text
+      <FeedbackMessage
+        kind="error"
+        message={errorMessage}
         style={styles.errorText}
-        accessibilityRole="alert"
-      >
-        {errorMessage}
-      </Text>
+      />
 
-      <TouchableOpacity
-        style={styles.primaryButton}
-        activeOpacity={0.8}
-        onPress={onRetry}
-      >
-        <Text style={styles.primaryButtonText}>
-          Tentar novamente
-        </Text>
-      </TouchableOpacity>
+      <AppButton label="Tentar novamente" onPress={onRetry} />
     </View>
   );
 }

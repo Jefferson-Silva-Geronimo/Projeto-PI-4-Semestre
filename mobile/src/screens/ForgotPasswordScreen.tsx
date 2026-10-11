@@ -1,13 +1,15 @@
 import {
   SafeAreaView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField from '../components/AppTextField';
+import FeedbackMessage from '../components/FeedbackMessage';
+import ScreenTitle from '../components/ScreenTitle';
 import { useForgotPassword } from '../hooks/useForgotPassword';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -48,9 +50,9 @@ export default function ForgotPasswordScreen({
           PETSHOP
         </Text>
 
-        <Text style={styles.title}>
+        <ScreenTitle style={styles.title}>
           Recuperar senha
-        </Text>
+        </ScreenTitle>
 
         <Text style={styles.subtitle}>
           Informe seu e-mail para receber as
@@ -58,67 +60,49 @@ export default function ForgotPasswordScreen({
         </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage
-                ? styles.inputError
-                : undefined,
-            ]}
-            placeholder="Digite seu e-mail"
-            placeholderTextColor="#64748B"
+          <AppTextField
+            label="E-mail"
+            style={errorMessage ? styles.inputError : undefined}
+            placeholder="nome@exemplo.com"
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
             autoComplete="email"
+            textContentType="emailAddress"
             value={email}
             onChangeText={setEmail}
             editable={!loading}
             returnKeyType="send"
-            onSubmitEditing={
-              onForgotPasswordPress
-            }
+            onSubmitEditing={onForgotPasswordPress}
           />
 
-          {errorMessage ? (
-            <Text style={styles.errorText}>
-              {errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.errorText}
+          />
 
-          {successMessage ? (
-            <Text style={styles.successText}>
-              {successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={successMessage}
+            style={styles.successText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              loading
-                ? styles.buttonDisabled
-                : undefined,
-            ]}
-            activeOpacity={0.8}
-            disabled={loading}
+          <AppButton
+            size="large"
+            label="Enviar recuperação"
+            loading={loading}
+            loadingLabel="Enviando..."
             onPress={onForgotPasswordPress}
-          >
-            <Text style={styles.buttonText}>
-              {loading
-                ? 'Enviando...'
-                : 'Enviar recuperação'}
-            </Text>
-          </TouchableOpacity>
+            style={{ marginTop: 8 }}
+          />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Voltar para o login"
             disabled={loading}
             onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.link}>
-              Voltar para o login
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       </View>
     </SafeAreaView>

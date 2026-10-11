@@ -3,17 +3,22 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
+
+import { colors, sizes } from '../theme/tokens';
 
 interface ChipOption<T extends string> {
   value: T;
   label: string;
+  accessibilityLabel?: string;
 }
 
 interface ChipGroupProps<T extends string> {
   options: ChipOption<T>[];
   selected: T | null;
   onSelect: (value: T | null) => void;
+  groupLabel?: string;
   allowClear?: boolean;
   allLabel?: string;
   disabled?: boolean;
@@ -23,81 +28,75 @@ export default function ChipGroup<T extends string>({
   options,
   selected,
   onSelect,
+  groupLabel,
   allowClear = false,
   allLabel = 'Todos',
   disabled = false,
 }: ChipGroupProps<T>) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}
-      keyboardShouldPersistTaps="handled"
-    >
-      {allowClear ? (
-        <TouchableOpacity
-          style={[
-            styles.chip,
-            selected === null
-              ? styles.chipSelected
-              : undefined,
-          ]}
-          activeOpacity={0.8}
-          disabled={disabled}
-          onPress={() => onSelect(null)}
-          accessibilityRole="button"
-          accessibilityState={{
-            selected: selected === null,
-          }}
-        >
-          <Text
-            style={[
-              styles.chipText,
-              selected === null
-                ? styles.chipTextSelected
-                : undefined,
-            ]}
-          >
-            {allLabel}
-          </Text>
-        </TouchableOpacity>
-      ) : null}
-
-      {options.map((option) => {
-        const isSelected =
-          selected === option.value;
-
-        return (
+    <View accessibilityRole="radiogroup" accessibilityLabel={groupLabel}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        {allowClear ? (
           <TouchableOpacity
-            key={option.value}
             style={[
               styles.chip,
-              isSelected
-                ? styles.chipSelected
-                : undefined,
+              selected === null ? styles.chipSelected : undefined,
             ]}
             activeOpacity={0.8}
             disabled={disabled}
-            onPress={() => onSelect(option.value)}
-            accessibilityRole="button"
+            onPress={() => onSelect(null)}
+            accessibilityRole="radio"
             accessibilityState={{
-              selected: isSelected,
+              checked: selected === null,
+              disabled,
             }}
           >
             <Text
               style={[
                 styles.chipText,
-                isSelected
-                  ? styles.chipTextSelected
-                  : undefined,
+                selected === null ? styles.chipTextSelected : undefined,
               ]}
             >
-              {option.label}
+              {allLabel}
             </Text>
           </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
+        ) : null}
+
+        {options.map((option) => {
+          const isSelected = selected === option.value;
+
+          return (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.chip,
+                isSelected ? styles.chipSelected : undefined,
+              ]}
+              activeOpacity={0.8}
+              disabled={disabled}
+              onPress={() => onSelect(option.value)}
+              accessibilityRole="radio"
+              accessibilityLabel={option.accessibilityLabel}
+              accessibilityState={{ checked: isSelected, disabled }}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  isSelected ? styles.chipTextSelected : undefined,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -107,25 +106,26 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   chip: {
-    height: 38,
+    minHeight: sizes.minTouch,
+    minWidth: sizes.minTouch,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: sizes.radius,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.borderControl,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipSelected: {
-    borderColor: '#2D6CDF',
-    backgroundColor: '#2D6CDF',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
   },
   chipText: {
-    color: '#475569',
+    color: colors.textSecondary,
     fontSize: 14,
     fontWeight: '600',
   },
   chipTextSelected: {
-    color: '#FFFFFF',
+    color: colors.white,
   },
 });

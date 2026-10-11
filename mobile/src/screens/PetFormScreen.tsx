@@ -1,12 +1,12 @@
+import { useRef } from 'react';
+
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
@@ -14,10 +14,15 @@ import type {
   NativeStackScreenProps,
 } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import ChipGroup from '../components/ChipGroup';
+import FeedbackMessage from '../components/FeedbackMessage';
+import LoadingIndicator from '../components/LoadingIndicator';
 import ScreenHeader from '../components/ScreenHeader';
 import { usePetForm } from '../hooks/usePetForm';
-import { authStyles } from '../theme/authStyles';
 import { commonStyles as styles } from '../theme/commonStyles';
 import { confirmAction } from '../utils/confirm';
 
@@ -37,6 +42,11 @@ export default function PetFormScreen({
   const petId = route.params?.petId;
 
   const form = usePetForm(petId);
+
+  const breedRef = useRef<TextFieldRef>(null);
+  const birthDateRef = useRef<TextFieldRef>(null);
+  const weightRef = useRef<TextFieldRef>(null);
+  const notesRef = useRef<TextFieldRef>(null);
 
   async function handleSave(): Promise<void> {
     if (await form.save()) {
@@ -66,7 +76,7 @@ export default function PetFormScreen({
 
       {form.loading ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#2D6CDF" />
+          <LoadingIndicator />
         </View>
       ) : (
         <KeyboardAvoidingView
@@ -79,23 +89,23 @@ export default function PetFormScreen({
             contentContainerStyle={styles.formContent}
             keyboardShouldPersistTaps="handled"
           >
-            <View>
-              <Text style={styles.label}>Nome</Text>
-
-              <TextInput
-                style={authStyles.input}
-                value={form.name}
-                onChangeText={form.setName}
-                placeholder="Nome do pet"
-                placeholderTextColor="#64748B"
-                editable={!form.saving}
-              />
-            </View>
+            <AppTextField
+              label="Nome"
+              value={form.name}
+              onChangeText={form.setName}
+              placeholder="Nome do pet"
+              autoCapitalize="words"
+              editable={!form.saving}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => breedRef.current?.focus()}
+            />
 
             <View>
               <Text style={styles.label}>Espécie</Text>
 
               <ChipGroup
+                groupLabel="Espécie"
                 options={speciesOptions}
                 selected={form.species}
                 onSelect={(value) =>
@@ -109,6 +119,7 @@ export default function PetFormScreen({
               <Text style={styles.label}>Porte</Text>
 
               <ChipGroup
+                groupLabel="Porte"
                 options={sizeOptions}
                 selected={form.size}
                 onSelect={(value) =>
@@ -118,109 +129,81 @@ export default function PetFormScreen({
               />
             </View>
 
-            <View>
-              <Text style={styles.label}>Raça</Text>
+            <AppTextField
+              ref={breedRef}
+              label="Raça (opcional)"
+              value={form.breed}
+              onChangeText={form.setBreed}
+              placeholder="Ex.: Labrador"
+              editable={!form.saving}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => birthDateRef.current?.focus()}
+            />
 
-              <TextInput
-                style={authStyles.input}
-                value={form.breed}
-                onChangeText={form.setBreed}
-                placeholder="Opcional"
-                placeholderTextColor="#64748B"
-                editable={!form.saving}
-              />
-            </View>
+            <AppTextField
+              ref={birthDateRef}
+              label="Data de nascimento"
+              value={form.birthDate}
+              onChangeText={form.setBirthDate}
+              placeholder="DD/MM/AAAA"
+              helperText="Dia, mês e ano."
+              keyboardType="number-pad"
+              maxLength={10}
+              editable={!form.saving}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => weightRef.current?.focus()}
+            />
 
-            <View>
-              <Text style={styles.label}>Nascimento</Text>
+            <AppTextField
+              ref={weightRef}
+              label="Peso em kg"
+              value={form.weight}
+              onChangeText={form.setWeight}
+              placeholder="8,5"
+              keyboardType="decimal-pad"
+              editable={!form.saving}
+              returnKeyType="next"
+              blurOnSubmit={false}
+              onSubmitEditing={() => notesRef.current?.focus()}
+            />
 
-              <TextInput
-                style={authStyles.input}
-                value={form.birthDate}
-                onChangeText={form.setBirthDate}
-                placeholder="DD/MM/AAAA"
-                placeholderTextColor="#64748B"
-                keyboardType="number-pad"
-                maxLength={10}
-                editable={!form.saving}
-              />
-            </View>
+            <AppTextField
+              ref={notesRef}
+              label="Observações"
+              value={form.notes}
+              onChangeText={form.setNotes}
+              placeholder="Alergias, cuidados especiais..."
+              multiline
+              editable={!form.saving}
+            />
 
-            <View>
-              <Text style={styles.label}>Peso (kg)</Text>
+            <FeedbackMessage
+              kind="error"
+              message={form.errorMessage}
+              style={styles.errorText}
+            />
 
-              <TextInput
-                style={authStyles.input}
-                value={form.weight}
-                onChangeText={form.setWeight}
-                placeholder="Ex.: 8,5"
-                placeholderTextColor="#64748B"
-                keyboardType="decimal-pad"
-                editable={!form.saving}
-              />
-            </View>
-
-            <View>
-              <Text style={styles.label}>Observações</Text>
-
-              <TextInput
-                style={[
-                  authStyles.input,
-                  {
-                    height: 96,
-                    paddingTop: 14,
-                    textAlignVertical: 'top',
-                  },
-                ]}
-                value={form.notes}
-                onChangeText={form.setNotes}
-                placeholder="Alergias, cuidados especiais..."
-                placeholderTextColor="#64748B"
-                multiline
-                editable={!form.saving}
-              />
-            </View>
-
-            {form.errorMessage ? (
-              <Text
-                style={styles.errorText}
-                accessibilityRole="alert"
-              >
-                {form.errorMessage}
-              </Text>
-            ) : null}
-
-            <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                form.saving ? styles.disabled : undefined,
-              ]}
-              activeOpacity={0.8}
-              disabled={form.saving}
+            <AppButton
+              size="large"
+              label="Salvar"
+              loading={form.saving}
+              loadingLabel="Salvando..."
               onPress={() => {
                 void handleSave();
               }}
-              accessibilityRole="button"
-            >
-              <Text style={styles.primaryButtonText}>
-                {form.saving ? 'Salvando...' : 'Salvar'}
-              </Text>
-            </TouchableOpacity>
+            />
 
             {petId ? (
-              <TouchableOpacity
-                style={styles.dangerButton}
-                activeOpacity={0.8}
+              <AppButton
+                variant="danger"
+                label="Excluir pet"
                 disabled={form.saving}
                 onPress={() => {
                   void handleRemove();
                 }}
-                accessibilityRole="button"
-              >
-                <Text style={styles.dangerButtonText}>
-                  Excluir pet
-                </Text>
-              </TouchableOpacity>
+              />
             ) : null}
           </ScrollView>
         </KeyboardAvoidingView>

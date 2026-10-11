@@ -39,6 +39,26 @@ export function formatDateKey(dateKey: string): string {
   return `${names[weekday]} ${day}/${month}`;
 }
 
+export function formatDateKeyLong(dateKey: string): string {
+  const [year, month, day] = dateKey.split('-');
+
+  const weekday = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day)),
+  ).getUTCDay();
+
+  const names = [
+    'Domingo',
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado',
+  ];
+
+  return `${names[weekday]}, ${day}/${month}`;
+}
+
 export function formatTime(iso: string): string {
   return shifted(new Date(iso))
     .toISOString()

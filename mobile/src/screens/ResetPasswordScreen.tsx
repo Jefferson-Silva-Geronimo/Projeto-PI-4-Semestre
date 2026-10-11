@@ -1,13 +1,18 @@
+import { useRef } from 'react';
+
 import {
   SafeAreaView,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import AppButton from '../components/AppButton';
+import FeedbackMessage from '../components/FeedbackMessage';
+import { type TextFieldRef } from '../components/AppTextField';
+import PasswordInput from '../components/PasswordInput';
+import ScreenTitle from '../components/ScreenTitle';
 import { useResetPassword } from '../hooks/useResetPassword';
 import { authStyles as styles } from '../theme/authStyles';
 import type { AuthStackParamList } from '../types/navigation';
@@ -36,6 +41,10 @@ export default function ResetPasswordScreen({
     token,
   });
 
+  const confirmationRef = useRef<TextFieldRef>(null);
+
+  const errorStyle = errorMessage ? styles.inputError : undefined;
+
   async function onResetPasswordPress() {
     const passwordWasReset =
       await handleResetPassword();
@@ -54,9 +63,9 @@ export default function ResetPasswordScreen({
           PETSHOP
         </Text>
 
-        <Text style={styles.title}>
+        <ScreenTitle style={styles.title}>
           Criar nova senha
-        </Text>
+        </ScreenTitle>
 
         <Text style={styles.subtitle}>
           Escolha uma nova senha para acessar
@@ -64,43 +73,32 @@ export default function ResetPasswordScreen({
         </Text>
 
         <View style={styles.form}>
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage
-                ? styles.inputError
-                : undefined,
-            ]}
+          <PasswordInput
+            label="Nova senha"
+            style={errorStyle}
             placeholder="Digite a nova senha"
-            placeholderTextColor="#64748B"
+            autoComplete="new-password"
+            textContentType="newPassword"
             value={password}
             onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             editable={!loading}
             returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => confirmationRef.current?.focus()}
           />
 
-          <TextInput
-            style={[
-              styles.input,
-              errorMessage
-                ? styles.inputError
-                : undefined,
-            ]}
-            placeholder="Confirme a nova senha"
-            placeholderTextColor="#64748B"
+          <PasswordInput
+            ref={confirmationRef}
+            label="Confirmar nova senha"
+            style={errorStyle}
+            placeholder="Repita a nova senha"
+            autoComplete="new-password"
+            textContentType="newPassword"
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
             editable={!loading}
             returnKeyType="done"
-            onSubmitEditing={
-              onResetPasswordPress
-            }
+            onSubmitEditing={onResetPasswordPress}
           />
 
           <Text style={styles.helperText}>
@@ -108,47 +106,33 @@ export default function ResetPasswordScreen({
             caracteres.
           </Text>
 
-          {errorMessage ? (
-            <Text style={styles.errorText}>
-              {errorMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="error"
+            message={errorMessage}
+            style={styles.errorText}
+          />
 
-          {successMessage ? (
-            <Text style={styles.successText}>
-              {successMessage}
-            </Text>
-          ) : null}
+          <FeedbackMessage
+            kind="success"
+            message={successMessage}
+            style={styles.successText}
+          />
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              loading
-                ? styles.buttonDisabled
-                : undefined,
-            ]}
-            activeOpacity={0.8}
+          <AppButton
+            size="large"
+            label="Alterar senha"
+            loading={loading}
+            loadingLabel="Alterando..."
             onPress={onResetPasswordPress}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading
-                ? 'Alterando...'
-                : 'Alterar senha'}
-            </Text>
-          </TouchableOpacity>
+            style={{ marginTop: 8 }}
+          />
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <AppButton
+            variant="link"
+            label="Voltar para o login"
             disabled={loading}
-            onPress={() =>
-              navigation.navigate('Login')
-            }
-          >
-            <Text style={styles.link}>
-              Voltar para o login
-            </Text>
-          </TouchableOpacity>
+            onPress={() => navigation.navigate('Login')}
+          />
         </View>
       </View>
     </SafeAreaView>

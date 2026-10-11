@@ -63,6 +63,50 @@ Mobile (`mobile/.env`):
 | --- | --- |
 | `EXPO_PUBLIC_API_URL` | URL da API, por exemplo `http://SEU_IP_LOCAL:3000` |
 
+## Acessibilidade
+
+O app segue as diretrizes de acessibilidade para TalkBack (Android, prioridade) e VoiceOver (iOS).
+
+**Componentes base** (`mobile/src/components/`). Telas novas **devem** usá-los:
+
+| Componente | Uso |
+| --- | --- |
+| `AppButton` | Todo botão simples (principal, contorno, perigo, link), com estados `disabled` e `busy` |
+| `AppTextField` / `PasswordInput` | Todo campo de formulário, com rótulo visível ligado ao campo |
+| `FeedbackMessage` | Erros, sucessos e avisos anunciados pelo leitor de tela |
+| `LoadingIndicator` | Todo carregamento, com papel `progressbar` |
+| `ScreenTitle` | Título da tela (`header`) e foco do leitor ao entrar na tela |
+| `BackButton` | Botão de voltar com 48 dp |
+| `ChipGroup` | Seleção única como `radiogroup`, sempre com `groupLabel` |
+
+**Regras resumidas**
+
+1. Todo controle tocável tem `accessibilityRole`.
+2. O nome acessível começa com o texto visível (comando de voz "toque em Entrar"); só se acrescenta contexto depois.
+3. Se o texto visível já descreve o controle, não se define `accessibilityLabel`.
+4. Cartões tocáveis têm rótulo composto com todas as informações visíveis; nunca UUID ou ID técnico.
+5. Alvo de toque mínimo de 48 x 48 dp, com `minHeight`/`minWidth` (não `hitSlop`) e sem `height` fixo em texto.
+6. Contraste mínimo de 4,5:1 para texto e 3:1 para bordas e ícones; cores em `theme/tokens.ts`.
+7. Nunca informar só por cor; desabilitado não usa `opacity`.
+8. Todo campo tem rótulo visível e erro em texto abaixo do campo; teclado, `autoComplete` e foco encadeado corretos.
+9. Erros e avisos são anunciados (região viva no Android, `announceForAccessibility` no iOS, nunca os dois).
+10. Títulos de tela e de seção usam `accessibilityRole="header"`; imagens decorativas usam `accessible={false}`.
+
+**Auditoria automática**
+
+```bash
+cd mobile
+npm run audit:a11y
+```
+
+O script verifica toques sem papel, campos sem rótulo, imagens sem rótulo e estilos de controle menores que 48 dp. O esperado é a saída `Nenhum problema encontrado.`.
+
+**Limitações conhecidas**
+
+- Orientação travada em retrato (`orientation: "portrait"`), o que a WCAG 1.3.4 recomenda evitar.
+- Apenas tema claro (`userInterfaceStyle: "light"`).
+- A versão web não é alvo de teste com leitor de tela.
+
 ## Estrutura de pastas
 
 ```

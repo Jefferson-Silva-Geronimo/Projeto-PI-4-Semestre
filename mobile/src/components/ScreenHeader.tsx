@@ -1,10 +1,10 @@
-import {
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Text, View } from 'react-native';
 
 import { commonStyles as styles } from '../theme/commonStyles';
+
+import AppButton from './AppButton';
+import BackButton from './BackButton';
+import ScreenTitle from './ScreenTitle';
 
 interface ScreenHeaderProps {
   title: string;
@@ -23,36 +23,20 @@ export default function ScreenHeader({
 }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onBack}
-        accessibilityRole="button"
-        accessibilityLabel="Voltar"
-      >
-        <Text style={styles.backText}>‹ Voltar</Text>
-      </TouchableOpacity>
+      <BackButton onPress={onBack} />
 
-      <Text style={styles.title}>{title}</Text>
+      <ScreenTitle style={styles.title}>{title}</ScreenTitle>
 
       {subtitle ? (
         <Text style={styles.subtitle}>{subtitle}</Text>
       ) : null}
 
       {actionLabel && onAction ? (
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            { alignSelf: 'flex-start', marginTop: 14 },
-          ]}
-          activeOpacity={0.8}
+        <AppButton
+          label={actionLabel}
           onPress={onAction}
-          accessibilityRole="button"
-          accessibilityLabel={actionLabel}
-        >
-          <Text style={styles.primaryButtonText}>
-            {actionLabel}
-          </Text>
-        </TouchableOpacity>
+          style={{ alignSelf: 'flex-start', marginTop: 14 }}
+        />
       ) : null}
     </View>
   );
