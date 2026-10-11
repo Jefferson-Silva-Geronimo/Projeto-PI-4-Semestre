@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react';
 import {
   AccessibilityInfo,
   findNodeHandle,
+  Platform,
   Text,
   type StyleProp,
   type TextStyle,
@@ -23,6 +24,10 @@ export default function ScreenTitle({
 
   useFocusEffect(
     useCallback(() => {
+      if (Platform.OS === 'web') {
+        return undefined;
+      }
+
       const timer = setTimeout(() => {
         const node = findNodeHandle(ref.current);
 
