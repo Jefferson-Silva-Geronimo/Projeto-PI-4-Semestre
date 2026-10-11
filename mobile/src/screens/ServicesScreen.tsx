@@ -29,6 +29,14 @@ type Props = NativeStackScreenProps<
 export default function ServicesScreen({
   navigation,
 }: Props) {
+  function handleBack(): void {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('ClientHome');
+  }
   const {
     items: services,
     loading,
@@ -88,7 +96,7 @@ export default function ServicesScreen({
       <ScreenHeader
         title="Serviços"
         subtitle="Banho, tosa e cuidados para o seu pet."
-        onBack={() => navigation.goBack()}
+        onBack={handleBack}
       />
 
       {loading || (errorMessage && services.length === 0) ? (

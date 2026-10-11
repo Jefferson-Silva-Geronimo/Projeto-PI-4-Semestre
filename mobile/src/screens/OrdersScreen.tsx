@@ -50,6 +50,14 @@ const statusLabels: Record<OrderStatus, string> = {
 export default function OrdersScreen({
   navigation,
 }: Props) {
+  function handleBack(): void {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('ClientHome');
+  }
   const {
     orders,
     loading,
@@ -153,7 +161,7 @@ export default function OrdersScreen({
             variant="outline"
             label="Voltar"
             style={{ marginTop: 8 }}
-            onPress={() => navigation.goBack()}
+            onPress={handleBack}
           />
         </View>
       </SafeAreaView>
@@ -163,7 +171,7 @@ export default function OrdersScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton onPress={() => navigation.goBack()} />
+        <BackButton onPress={handleBack} />
 
         <ScreenTitle style={styles.headerTitle}>
           Meus pedidos

@@ -42,6 +42,14 @@ type Props = NativeStackScreenProps<
 export default function CartScreen({
   navigation,
 }: Props) {
+  function handleBack(): void {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+
+    navigation.navigate('ClientHome');
+  }
   const {
     cart,
     loading,
@@ -239,7 +247,7 @@ export default function CartScreen({
             variant="link"
             label="Voltar"
             style={{ marginTop: 8 }}
-            onPress={() => navigation.goBack()}
+            onPress={handleBack}
           />
         </View>
       </SafeAreaView>
@@ -249,7 +257,7 @@ export default function CartScreen({
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <BackButton onPress={() => navigation.goBack()} />
+        <BackButton onPress={handleBack} />
 
         <ScreenTitle style={styles.headerTitle}>
           Carrinho
