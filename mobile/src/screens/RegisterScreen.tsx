@@ -3,14 +3,15 @@ import { useRef } from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
 import ScreenTitle from '../components/ScreenTitle';
@@ -43,10 +44,10 @@ export default function RegisterScreen({
     handleRegister,
   } = useRegister();
 
-  const emailRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
-  const confirmationRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextFieldRef>(null);
+  const phoneRef = useRef<TextFieldRef>(null);
+  const passwordRef = useRef<TextFieldRef>(null);
+  const confirmationRef = useRef<TextFieldRef>(null);
 
   const errorStyle = errorMessage ? styles.inputError : undefined;
 

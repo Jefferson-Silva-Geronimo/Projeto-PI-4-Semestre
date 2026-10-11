@@ -7,7 +7,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -17,7 +16,9 @@ import type {
 } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import BackButton from '../components/BackButton';
 import ChipGroup from '../components/ChipGroup';
 import FeedbackMessage from '../components/FeedbackMessage';
@@ -73,10 +74,10 @@ export default function EditProductScreen({
     productId,
   });
 
-  const descriptionRef = useRef<TextInput>(null);
-  const priceRef = useRef<TextInput>(null);
-  const stockRef = useRef<TextInput>(null);
-  const imageUrlRef = useRef<TextInput>(null);
+  const descriptionRef = useRef<TextFieldRef>(null);
+  const priceRef = useRef<TextFieldRef>(null);
+  const stockRef = useRef<TextFieldRef>(null);
+  const imageUrlRef = useRef<TextFieldRef>(null);
 
   async function handleSave(): Promise<void> {
     const saved = await saveProduct();

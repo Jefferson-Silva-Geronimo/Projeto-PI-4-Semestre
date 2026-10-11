@@ -204,9 +204,11 @@ export default function AdminProductsScreen({
               }}
               accessibilityRole="button"
               accessibilityLabel={
-                item.active
-                  ? `Inativar ${item.name}`
-                  : `Reativar ${item.name}`
+                processing
+                  ? `Aguarde... atualizando ${item.name}`
+                  : item.active
+                    ? `Inativar ${item.name}`
+                    : `Reativar ${item.name}`
               }
               accessibilityState={{
                 disabled: processing,

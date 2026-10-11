@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
@@ -11,6 +10,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
 import FeedbackMessage from '../components/FeedbackMessage';
+import { type TextFieldRef } from '../components/AppTextField';
 import PasswordInput from '../components/PasswordInput';
 import ScreenTitle from '../components/ScreenTitle';
 import { useResetPassword } from '../hooks/useResetPassword';
@@ -41,7 +41,7 @@ export default function ResetPasswordScreen({
     token,
   });
 
-  const confirmationRef = useRef<TextInput>(null);
+  const confirmationRef = useRef<TextFieldRef>(null);
 
   const errorStyle = errorMessage ? styles.inputError : undefined;
 

@@ -14,7 +14,9 @@ import type {
 } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
 import ScreenHeader from '../components/ScreenHeader';
@@ -33,8 +35,8 @@ export default function EditProfileScreen({
 }: Props) {
   const form = useEditProfile();
 
-  const phoneRef = useRef<TextInput>(null);
-  const newPasswordRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextFieldRef>(null);
+  const newPasswordRef = useRef<TextFieldRef>(null);
 
   return (
     <SafeAreaView style={styles.container}>

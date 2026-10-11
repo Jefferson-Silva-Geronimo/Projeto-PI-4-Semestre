@@ -6,14 +6,15 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import ChipGroup from '../components/ChipGroup';
 import FeedbackMessage from '../components/FeedbackMessage';
 import ScreenTitle from '../components/ScreenTitle';
@@ -56,10 +57,10 @@ export default function CreateProductScreen({
     handleCreateProduct,
   } = useCreateProduct();
 
-  const descriptionRef = useRef<TextInput>(null);
-  const priceRef = useRef<TextInput>(null);
-  const stockRef = useRef<TextInput>(null);
-  const imageUrlRef = useRef<TextInput>(null);
+  const descriptionRef = useRef<TextFieldRef>(null);
+  const priceRef = useRef<TextFieldRef>(null);
+  const stockRef = useRef<TextFieldRef>(null);
+  const imageUrlRef = useRef<TextFieldRef>(null);
 
   const errorStyle = errorMessage ? styles.inputError : undefined;
 

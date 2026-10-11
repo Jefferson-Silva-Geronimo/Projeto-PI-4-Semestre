@@ -3,14 +3,15 @@ import { useRef } from 'react';
 import {
   SafeAreaView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import FeedbackMessage from '../components/FeedbackMessage';
 import PasswordInput from '../components/PasswordInput';
 import ScreenTitle from '../components/ScreenTitle';
@@ -36,7 +37,7 @@ export default function LoginScreen({
     handleLogin,
   } = useLogin();
 
-  const passwordRef = useRef<TextInput>(null);
+  const passwordRef = useRef<TextFieldRef>(null);
 
   async function onLoginPress() {
     await handleLogin();

@@ -15,7 +15,9 @@ import type {
 } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import ChipGroup from '../components/ChipGroup';
 import FeedbackMessage from '../components/FeedbackMessage';
 import LoadingIndicator from '../components/LoadingIndicator';
@@ -41,10 +43,10 @@ export default function PetFormScreen({
 
   const form = usePetForm(petId);
 
-  const breedRef = useRef<TextInput>(null);
-  const birthDateRef = useRef<TextInput>(null);
-  const weightRef = useRef<TextInput>(null);
-  const notesRef = useRef<TextInput>(null);
+  const breedRef = useRef<TextFieldRef>(null);
+  const birthDateRef = useRef<TextFieldRef>(null);
+  const weightRef = useRef<TextFieldRef>(null);
+  const notesRef = useRef<TextFieldRef>(null);
 
   async function handleSave(): Promise<void> {
     if (await form.save()) {

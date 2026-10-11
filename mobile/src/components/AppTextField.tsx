@@ -14,6 +14,8 @@ import { colors } from '../theme/tokens';
 
 import FeedbackMessage from './FeedbackMessage';
 
+export type TextFieldRef = TextInput;
+
 export interface AppTextFieldProps extends TextInputProps {
   label: string;
   helperText?: string;

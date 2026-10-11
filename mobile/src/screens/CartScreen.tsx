@@ -263,7 +263,9 @@ export default function CartScreen({
             void handleClearCart();
           }}
           accessibilityRole="button"
-          accessibilityLabel="Limpar carrinho"
+          accessibilityLabel={
+            clearing ? 'Limpando carrinho...' : 'Limpar carrinho'
+          }
           accessibilityState={{
             disabled: cart.items.length === 0 || clearing,
           }}

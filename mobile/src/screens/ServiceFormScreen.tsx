@@ -14,7 +14,9 @@ import type {
 } from '@react-navigation/native-stack';
 
 import AppButton from '../components/AppButton';
-import AppTextField from '../components/AppTextField';
+import AppTextField, {
+  type TextFieldRef,
+} from '../components/AppTextField';
 import FeedbackMessage from '../components/FeedbackMessage';
 import LoadingIndicator from '../components/LoadingIndicator';
 import ScreenHeader from '../components/ScreenHeader';
@@ -37,11 +39,11 @@ export default function ServiceFormScreen({
 
   const form = useServiceForm(serviceId);
 
-  const descriptionRef = useRef<TextInput>(null);
-  const durationRef = useRef<TextInput>(null);
-  const priceSmallRef = useRef<TextInput>(null);
-  const priceMediumRef = useRef<TextInput>(null);
-  const priceLargeRef = useRef<TextInput>(null);
+  const descriptionRef = useRef<TextFieldRef>(null);
+  const durationRef = useRef<TextFieldRef>(null);
+  const priceSmallRef = useRef<TextFieldRef>(null);
+  const priceMediumRef = useRef<TextFieldRef>(null);
+  const priceLargeRef = useRef<TextFieldRef>(null);
 
   async function handleSave(): Promise<void> {
     if (await form.save()) {
